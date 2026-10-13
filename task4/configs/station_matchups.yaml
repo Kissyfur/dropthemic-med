@@ -8,11 +8,11 @@
 # A copernicus-matchup data config, plus the `stations`, `period`, `box_margin` and
 # `output_root` keys that the script reads.
 
-stations:                      # coordinates as in ps_mtag.csv, where the training cubes sit
+stations:                      # coordinates as in ps_mtag.csv, except VIDA
   BBMO: [41.665, 2.805]        # Blanes Bay Microbial Observatory
   SOLA: [42.488702, 3.142906]  # Banyuls-sur-Mer, coastal
   MOLA: [42.505556, 3.700000]  # Banyuls-sur-Mer, offshore
-  VIDA: [45.500000, 13.600000] # Piran, Gulf of Trieste (rounded in ps_mtag.csv)
+  VIDA: [45.548800, 13.550500] # Vida buoy, Piran (ps_mtag.csv rounds it to 45.5, 13.6, on land)
 
 period: {start: 1997-09-16, end: 2026-10-12}
 box_margin: 0.15               # degrees around each station downloaded once; wider than the window
