@@ -8,7 +8,7 @@ Slovenia).
 The project links satellite ocean colour to plankton diversity in two steps, each learnt from
 existing data:
 1. remote sensing reflectance (Rrs) → photosynthetic pigments;
-2. pigments → plankton groups from metabarcoding.
+2. pigments → plankton groups from meta-omics (metagenomes and metabarcoding).
 
 New DNA and pigment data from the Gulf of Trieste test the second step. Both models are then
 applied to more than 25 years of satellite records of the Mediterranean.
@@ -16,7 +16,7 @@ applied to more than 25 years of satellite records of the Mediterranean.
 | Task | Content | Status |
 |---|---|---|
 | [1](#task-1--from-radiometry-to-pigments) | Pigment concentrations from radiometry | Done: model and paper |
-| [2](#task-2--from-pigments-to-plankton-diversity) | Plankton groups from pigments | To come |
+| [2](#task-2--from-pigments-to-plankton-diversity) | Plankton groups from pigments | Models from PETRIMED, tested away from SOLA |
 | [3](#task-3--plankton-diversity-in-the-gulf-of-trieste) | New metabarcoding and pigment time series at VIDA | To come |
 | [4](#task-4--25-years-of-satellite-records) | Satellite radiometry → pigments → diversity, 1997 to today | In progress |
 
@@ -54,7 +54,57 @@ bands or at the 5 bands of the multi-sensor record.
 
 ## Task 2 — From pigments to plankton diversity
 
-To come.
+The models come from [PETRIMED](https://github.com/pjmramond/PETRIMED), the code of Ramond et al. (in
+preparation), *Inferring plankton biodiversity combining meta-omics and pigment data: a bridge
+towards satellite monitoring*. They are XGBoost models trained at SOLA in 2015–2016 that predict
+the abundance of plankton sequence types (PSTs) in the pico (0.2–3 µm) and nano (3–20 µm)
+fractions from the relative composition of 12 HPLC pigments, with the PSTs measured three ways:
+psbO gene (psbo), metagenome-assembled genomes (mags) and metabarcoding (metab).
+
+```bash
+git clone --depth 1 https://github.com/pjmramond/PETRIMED.git task2/PETRIMED   # used at commit 8c442cf
+Rscript task2/scripts/export_models.R
+python task2/scripts/psts.py
+```
+
+- `task2/PETRIMED` is a local copy, not kept in git: changes to it stay local.
+- `export_models.R` exports to `task2/data/models` the models that PETRIMED averages, those with a
+  validation correlation of at least 0.6, as xgboost JSON for Python. It needs R with the xgboost
+  package (`install.packages("xgboost")`): the models were saved with xgboost 2 or later.
+- `psts.py` predicts as PETRIMED does (pigments relative to their total, mean of the models) and
+  tests the pico models at BBMO (100 samples, 2004–2014), where they were not trained. It needs the
+  satellite pigments of Task 4 (step 3) and writes `task2/data/transferability.csv` and
+  `task2/figures/bbmo_check.png`.
+
+Correlation between predicted and observed abundance at BBMO, for the psbO PSTs best predicted
+from HPLC pigments:
+
+| PST (pico, psbO) | From HPLC pigments | From satellite pigments | Harmonized satellite | Harmonized, seasonal cycle |
+|---|---|---|---|---|
+| Micromonas | 0.55 | −0.24 | −0.10 | 0.05 |
+| Synechococcus | 0.54 | 0.02 | **0.61** | **0.88** |
+| Pelagophyceae | 0.52 | −0.21 | −0.15 | −0.28 |
+| Bathycoccus | 0.51 | 0.18 | 0.22 | **0.54** |
+| Prochlorococcus | 0.48 | 0.10 | 0.14 | 0.26 |
+
+- From HPLC pigments, 4 of the 18 psbO PSTs keep r ≥ 0.5 away from SOLA, and none of the 9 MAG
+  PSTs (Synechococcus and Micromonas are the best, 0.48). Replacing prasinoxanthin, which Task 1 does not estimate,
+  by 0.30 × chlorophyll b (their ratio at SOLA) changes r by 0.06 at most.
+- From the satellite pigments as they are, none: their composition is outside what the models
+  learned (zeaxanthin is 10% of the pigments around BBMO, against 1–2% in the HPLC samples), and
+  the seasonal cycles come out inverted. Mapping each pigment share by quantiles onto its HPLC
+  distribution at SOLA and MOLA (harmonized) recovers Synechococcus, also with the MAG models (0.48
+  monthly, 0.68 seasonal), and the seasonal cycle of Bathycoccus, but no other PST. Task 4 uses
+  these two. Both the models and the harmonization come from the NW Mediterranean: the VIDA data of
+  Task 3 will tell whether they hold in the Gulf of Trieste.
+
+<p align="center">
+  <img src="task2/report/bbmo_check.png" width="80%"
+       alt="Observed and predicted Synechococcus and Bathycoccus at BBMO, 2004-2014">
+</p>
+
+*Synechococcus and Bathycoccus at BBMO: observed, and predicted from HPLC and from harmonized
+satellite pigments.*
 
 ## Task 3 — Plankton diversity in the Gulf of Trieste
 

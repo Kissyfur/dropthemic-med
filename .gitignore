@@ -8,3 +8,8 @@ __pycache__/
 task4/data/
 task4/figures/
 predictions/
+
+# Task 2: the PETRIMED clone and the models exported from it
+task2/PETRIMED/
+task2/data/
+task2/figures/
