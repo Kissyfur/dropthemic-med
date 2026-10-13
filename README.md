@@ -23,7 +23,7 @@ applied to more than 25 years of satellite records of the Mediterranean.
 ## Installation
 
 ```bash
-git clone --recurse-submodules https://github.com/Kissyfur/dropthemic-med.git
+git clone https://github.com/Kissyfur/dropthemic-med.git
 cd dropthemic-med
 py -3.9 -m venv .venv               # Linux / macOS: python3.9 -m venv .venv
 .venv\Scripts\activate              # Linux / macOS: source .venv/bin/activate
@@ -31,9 +31,10 @@ pip install -r requirements.txt
 copernicusmarine login              # once, for the Copernicus Marine downloads
 ```
 
-Python 3.9 is required because the Task 1 models need TensorFlow 2.10. The environment installs:
+Python 3.9 and TensorFlow 2.10 are the versions of the Task 1 models; TensorFlow 2.10 is also the
+last version with GPU support on Windows. The environment installs from GitHub:
 - [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment-retrieval-from-olci) (Task 1),
-  a git submodule in `external/` that includes its trained models;
+  with its trained models;
 - [copernicus-matchup](https://github.com/Kissyfur/copernicus-matchup), which downloads Copernicus
   Marine data and builds matchups.
 
@@ -45,7 +46,7 @@ A convolutional neural network estimates 13 phytoplankton pigments from Rrs, eit
 bands or at the 5 bands of the multi-sensor record.
 
 - Code and trained models: [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment-retrieval-from-olci),
-  included in `external/pigment-retrieval-from-olci`.
+  installed with the environment.
 - Paper: Sánchez-López, B., Talone, M., Cerquides, J., Di Cicco, A., Martínez-Fornos, G. and Slavinec, P.
   (2026). Simultaneous retrieval of 13 phytoplankton pigments from Sentinel-3 OLCI using convolutional
   neural networks and transfer learning. *Frontiers in Remote Sensing*, 7.
