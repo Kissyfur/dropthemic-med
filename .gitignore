@@ -6,4 +6,5 @@ __pycache__/
 
 # Downloaded and generated data
 task4/data/
+task4/figures/
 predictions/

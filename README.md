@@ -69,7 +69,7 @@ For now this covers two areas around the sampling stations, not the whole Medite
 | `north_adriatic` | 44.50–45.85 N, 12.20–14.50 E | VIDA (Piran) |
 | `nw_mediterranean` | 40.50–43.50 N, 1.50–5.50 E | BBMO (Blanes), SOLA and MOLA (Banyuls-sur-Mer) |
 
-The data go to `task4/data/`, which is not kept in git.
+The data go to `task4/data/` and the figures to `task4/figures/`, neither kept in git.
 
 **1. Monthly radiometry.** Each month's mean of the daily 1 km multi-sensor Rrs, from September
 1997 to today, floored at its 5% quantile and log-transformed:
@@ -107,5 +107,23 @@ This writes the 13 pigments, in mg m⁻³, to `task4/data/pigments/`:
 
 `--only monthly` or `--only stations` predicts one of the two. For other files, the environment
 also has the `predict-pigments` command of Task 1 (see its README).
+
+**4. Figures.** Maps and station series of the pigments, for a first look before the diversity
+analysis:
+
+```bash
+python task4/scripts/pigment_figures.py
+```
+
+This writes to `task4/figures/`:
+- `<region>/<pigment>_years.png`: the mean of each complete year (1998–2025), one map per year;
+- `<region>/periods.png`: every pigment (rows) averaged over four periods of about seven years
+  (columns);
+- `stations/<station>.png`: one panel per pigment, with the median of each month over the pixels
+  around the station and its 12-month running mean.
+
+Months with fewer than 3 days of data are left out. All the maps of a pigment share one log colour
+scale. The record joins several sensors (SeaWiFS, MODIS, VIIRS, OLCI), so a change between years
+can come from a change of sensor rather than of the plankton.
 
 The analysis is still to come.
