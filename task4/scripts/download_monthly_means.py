@@ -160,7 +160,7 @@ def process_region(config: dict, name: str, box: dict, layout: tuple, dry_run: b
     end = min(_as_date(config.get("end")) or last, last)
     variables = list(config["variables"])
     lat, lon = box["lat"], box["lon"]
-    output_dir = Path(config.get("output_dir", "task4/data/monthly_means"))
+    output_dir = Path(config.get("output_dir", "task4/data/radiometry_monthly"))
     parts_dir, daily_dir = output_dir / "parts" / name, output_dir / "daily"
     # A part is reused only if it was made for exactly this request.
     request = json.dumps(
