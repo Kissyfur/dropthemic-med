@@ -90,16 +90,22 @@ python task4/scripts/station_matchups.py task4/configs/station_matchups.yaml
 
 This writes `task4/data/station_matchups/datasets/`.
 
-**3. Pigments.** The Task 1 model for the 5 multi-sensor bands, run from its own folder on a
-monthly file. `--logged` is needed because the file already holds ln(Rrs):
+**3. Pigments.** The Task 1 model for the 5 multi-sensor bands (`multi_sat_ft/concatenatedCNN`),
+on the monthly maps and on the station cubes:
 
 ```bash
-cd external/pigment-retrieval-from-olci
-python bin/predict.py --data ../../task4/data/radiometry_monthly/north_adriatic_monthly.nc --logged --output_dir ../../task4/data/pigments
-cd ../..
+python task4/scripts/predict_pigments.py
 ```
 
-This writes `task4/data/pigments/north_adriatic_monthly_multi_sat_ft_concatenatedCNN.nc`: the 13
-pigments in mg m⁻³ on the same (time, latitude, longitude) grid.
+This writes the 13 pigments, in mg m⁻³, to `task4/data/pigments/`:
+- `<region>_monthly.nc`, on the (time, latitude, longitude) grid of the monthly radiometry, with
+  its `valid_days`. Means of one or two days can be unrealistic: filter on `valid_days`.
+- `stations_daily.nc`, as (station, time, lat_pixel, lon_pixel): the 11 × 9 pixels of about 1 km
+  around each station, every day from 30 September 1997 to two weeks before the end of the record.
+  Only the pixels with a satellite retrieval that day are predicted, not the gaps that the cubes
+  fill by interpolation.
+
+`--only monthly` or `--only stations` predicts one of the two. For other files, the environment
+also has the `predict-pigments` command of Task 1 (see its README).
 
 The analysis is still to come.
