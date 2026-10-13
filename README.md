@@ -170,22 +170,21 @@ This writes their abundance (psbO RPKM) to `task4/data/psts/`, in about 10 minut
 - `stations_monthly.nc`, from the median of each month of the pigments around each station, as
   tested at BBMO.
 
-**5. Figures.** Maps and station series of the pigments, for a first look before the diversity
-analysis:
+**5. Figures.** Maps and station series of the pigments and of the plankton groups:
 
 ```bash
-python task4/scripts/pigment_figures.py
+python task4/scripts/figures.py
 ```
 
-This writes to `task4/figures/`:
-- `<region>/<pigment>_years.png`: the mean of each complete year (1998–2025), one map per year;
-- `<region>/periods.png`: every pigment (rows) averaged over four periods of about seven years
+This writes to `task4/figures/pigments/` and `task4/figures/psts/`:
+- `<region>/<variable>_years.png`: the mean of each complete year (1998–2025), one map per year;
+- `<region>/periods.png`: every variable (rows) averaged over four periods of about seven years
   (columns);
-- `stations/<station>.png`: one panel per pigment, with the median of each month over the pixels
-  around the station and its 12-month running mean.
+- `stations/<station>.png`: one panel per variable, with its monthly value around the station and
+  its 12-month running mean.
 
-Months with fewer than 3 days of data are left out. All the maps of a pigment share one log colour
-scale. The record joins several sensors (SeaWiFS, MODIS, VIIRS, OLCI), so a change between years
+Months with fewer than 3 days of data are left out. All the maps of a variable share one log
+colour scale. The record joins several sensors (SeaWiFS, MODIS, VIIRS, OLCI), so a change between years
 can come from a change of sensor rather than of the plankton.
 
 ### Analysis
