@@ -153,17 +153,46 @@ This writes the 13 pigments, in mg m⁻³, to `task4/data/pigments/`:
 `--only monthly` or `--only stations` predicts one of the two. For other files, the environment
 also has the `predict-pigments` command of Task 1 (see its README).
 
-**4. Plankton groups.** The PSTs of Task 2 that hold from satellite pigments, Synechococcus and
-Bathycoccus (pico, psbO), on the monthly maps and at the stations. It needs Task 2:
+**4. Plankton groups.** The Task 2 models on the satellite pigments. It needs Task 2:
 
 ```bash
 python task4/scripts/predict_psts.py
 ```
 
-This writes their abundance (psbO RPKM) to `task4/data/psts/`, in about 10 minutes:
-- `<region>_monthly.nc`, on the grid of the monthly pigments, with their `valid_days`;
-- `stations_monthly.nc`, from the median of each month of the pigments around each station, as
-  tested at BBMO.
+The pigment composition of the satellite record lies outside what the models learned: zeaxanthin
+is 10% of the pigments around BBMO, against 1–2% in the HPLC samples. The script first maps each
+pigment share, by quantiles, onto its HPLC distribution at SOLA and MOLA (harmonization). It then
+checks the models at BBMO, which the harmonization does not use, from the satellite pigments of
+the month of each sample:
+
+| PST (pico, psbO) | From HPLC pigments (Task 2) | From satellite pigments | Harmonized | Harmonized, seasonal cycle |
+|---|---|---|---|---|
+| Micromonas | 0.55 | −0.24 | −0.10 | 0.05 |
+| Synechococcus | 0.54 | 0.02 | **0.61** | **0.88** |
+| Pelagophyceae | 0.52 | −0.21 | −0.15 | −0.28 |
+| Bathycoccus | 0.51 | 0.18 | 0.22 | **0.54** |
+
+From the satellite pigments as they are, no PST holds and the seasonal cycles come out inverted.
+Harmonized, Synechococcus holds, also with the MAG models (0.48 monthly, 0.68 seasonal), and so
+does the seasonal cycle of Bathycoccus; no other PST does. The script then predicts these two and
+writes to `task4/data/psts/`, in about 10 minutes:
+- `satellite_check.csv`, `pigment_quantiles.csv` and `task4/figures/psts/bbmo_check.png`: the check
+  (`--check-only` stops there);
+- `<region>_monthly.nc`: their abundance (psbO RPKM) on the grid of the monthly pigments, with their
+  `valid_days`;
+- `stations_monthly.nc`: the same from the median of each month of the pigments around each
+  station, as checked at BBMO.
+
+Both the models and the harmonization come from the NW Mediterranean. As planned in the proposal
+(Risk 3), the plankton groups are analysed there, and Task 3 will tell whether they hold at VIDA.
+
+<p align="center">
+  <img src="task4/report/psts_bbmo_check.png" width="80%"
+       alt="Observed and predicted Synechococcus and Bathycoccus at BBMO, from HPLC and satellite pigments">
+</p>
+
+*Synechococcus and Bathycoccus at BBMO: observed, and predicted from the HPLC pigments and from the
+harmonized satellite pigments of each month.*
 
 **5. Figures.** Maps and station series of the pigments and of the plankton groups:
 
@@ -267,7 +296,7 @@ decade, p = 0.001).
 weak in 2003 and 2022.*
 
 **6. Plankton groups: Synechococcus follows the zeaxanthin signal.** Of the PETRIMED plankton
-groups, only Synechococcus holds from the satellite pigments (Task 2). Around the three NW
+groups, only Synechococcus holds from the satellite pigments (step 4). Around the three NW
 Mediterranean stations it peaks in July and is 2.5 times lower in winter, as observed at BBMO (peak
 in August), and its monthly values follow the satellite share of zeaxanthin (r = 0.55–0.71): it
 carries the zeaxanthin side of the second signal of point 1. Bathycoccus peaks in winter
