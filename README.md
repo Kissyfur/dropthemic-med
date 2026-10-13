@@ -16,7 +16,7 @@ applied to more than 25 years of satellite records of the Mediterranean.
 | Task | Content | Status |
 |---|---|---|
 | [1](#task-1--from-radiometry-to-pigments) | Pigment concentrations from radiometry | Done: model and paper |
-| [2](#task-2--from-pigments-to-plankton-diversity) | Plankton groups from pigments | Models from PETRIMED, tested away from SOLA |
+| [2](#task-2--from-pigments-to-plankton-diversity) | Plankton groups from pigments | Models from PETRIMED, tested at BBMO and MOLA |
 | [3](#task-3--plankton-diversity-in-the-gulf-of-trieste) | New metabarcoding and pigment time series at VIDA | To come |
 | [4](#task-4--25-years-of-satellite-records) | Satellite radiometry → pigments → diversity, 1997 to today | In progress |
 
@@ -72,43 +72,38 @@ python task2/scripts/psts.py
   validation correlation of at least 0.6, as xgboost JSON for Python. It needs R with the xgboost
   package (`install.packages("xgboost")`): the models were saved with xgboost 2 or later.
 - `psts.py` predicts as PETRIMED does (pigments relative to their total, mean of the models) and
-  tests the pico models at BBMO (100 samples, 2004–2014), where they were not trained. It needs the
-  satellite pigments of Task 4 (step 3) and writes `task2/data/transferability.csv` and
+  tests the pico models on the HPLC pigments of BBMO (100 samples, 2004–2014) and MOLA (7,
+  2020–2021), where they were not trained. It writes `task2/data/transferability.csv` and
   `task2/figures/bbmo_check.png`.
 
-Correlation between predicted and observed abundance at BBMO, for the psbO PSTs best predicted
-from HPLC pigments:
+Correlation between predicted and observed abundance, for the psbO PSTs best predicted at BBMO:
 
-| PST (pico, psbO) | From HPLC pigments | From satellite pigments | Harmonized satellite | Harmonized, seasonal cycle |
-|---|---|---|---|---|
-| Micromonas | 0.55 | −0.24 | −0.10 | 0.05 |
-| Synechococcus | 0.54 | 0.02 | **0.61** | **0.88** |
-| Pelagophyceae | 0.52 | −0.21 | −0.15 | −0.28 |
-| Bathycoccus | 0.51 | 0.18 | 0.22 | **0.54** |
-| Prochlorococcus | 0.48 | 0.10 | 0.14 | 0.26 |
+| PST (pico, psbO) | Models | Validation at SOLA | BBMO | BBMO, prasinoxanthin from chlorophyll b | MOLA (7 samples) |
+|---|---|---|---|---|---|
+| Micromonas | 428 | 0.72 | 0.55 | 0.57 | −0.13 |
+| Synechococcus | 594 | 0.75 | 0.54 | 0.52 | 0.89 |
+| Pelagophyceae | 251 | 0.67 | 0.52 | 0.52 | 0.51 |
+| Bathycoccus | 192 | 0.69 | 0.51 | 0.50 | 0.88 |
+| Prochlorococcus | 194 | 0.68 | 0.48 | 0.49 | −0.39 |
 
-- From HPLC pigments, 4 of the 18 psbO PSTs keep r ≥ 0.5 away from SOLA, and none of the 9 MAG
-  PSTs (Synechococcus and Micromonas are the best, 0.48). Replacing prasinoxanthin, which Task 1 does not estimate,
-  by 0.30 × chlorophyll b (their ratio at SOLA) changes r by 0.06 at most.
-- From the satellite pigments as they are, none: their composition is outside what the models
-  learned (zeaxanthin is 10% of the pigments around BBMO, against 1–2% in the HPLC samples), and
-  the seasonal cycles come out inverted. Mapping each pigment share by quantiles onto its HPLC
-  distribution at SOLA and MOLA (harmonized) recovers Synechococcus, also with the MAG models (0.48
-  monthly, 0.68 seasonal), and the seasonal cycle of Bathycoccus, but no other PST. Task 4 uses
-  these two. Both the models and the harmonization come from the NW Mediterranean: the VIDA data of
-  Task 3 will tell whether they hold in the Gulf of Trieste.
+- Validation at SOLA is the mean correlation of the averaged models on PETRIMED's validation
+  samples. Away from SOLA, 4 of the 18 psbO PSTs keep r ≥ 0.5 at BBMO, and none of the 9 MAG PSTs
+  (Synechococcus and Micromonas are the best, 0.48).
+- The models follow the timing of these PSTs at BBMO but miss the size of their peaks.
+- Prasinoxanthin, which Task 1 does not estimate, can be replaced by 0.30 × chlorophyll b, their
+  ratio at SOLA: r changes by 0.06 at most.
 
 <p align="center">
   <img src="task2/report/bbmo_check.png" width="80%"
-       alt="Observed and predicted Synechococcus and Bathycoccus at BBMO, 2004-2014">
+       alt="Observed and predicted Micromonas, Synechococcus, Pelagophyceae and Bathycoccus at BBMO, 2004-2014">
 </p>
 
-*Synechococcus and Bathycoccus at BBMO: observed, and predicted from HPLC and from harmonized
-satellite pigments.*
+*The four psbO PSTs that transfer best, at BBMO: observed, and predicted from the HPLC pigments.*
 
 ## Task 3 — Plankton diversity in the Gulf of Trieste
 
-To come.
+New metabarcoding and HPLC pigment time series at the Vida buoy (monthly, 2021–2024), to test the
+Task 2 models beyond the NW Mediterranean. To come.
 
 ## Task 4 — 25 years of satellite records
 
