@@ -158,7 +158,19 @@ This writes the 13 pigments, in mg m⁻³, to `task4/data/pigments/`:
 `--only monthly` or `--only stations` predicts one of the two. For other files, the environment
 also has the `predict-pigments` command of Task 1 (see its README).
 
-**4. Figures.** Maps and station series of the pigments, for a first look before the diversity
+**4. Plankton groups.** The PSTs of Task 2 that hold from satellite pigments, Synechococcus and
+Bathycoccus (pico, psbO), on the monthly maps and at the stations. It needs Task 2:
+
+```bash
+python task4/scripts/predict_psts.py
+```
+
+This writes their abundance (psbO RPKM) to `task4/data/psts/`, in about 10 minutes:
+- `<region>_monthly.nc`, on the grid of the monthly pigments, with their `valid_days`;
+- `stations_monthly.nc`, from the median of each month of the pigments around each station, as
+  tested at BBMO.
+
+**5. Figures.** Maps and station series of the pigments, for a first look before the diversity
 analysis:
 
 ```bash
@@ -179,7 +191,7 @@ can come from a change of sensor rather than of the plankton.
 ### Analysis
 
 A first look at the pigments before computing diversity indicators from them, compared with the
-literature. The figures are copies of those of step 4, in `task4/report/`. Trends are log-linear
+literature. The figures are copies of those of step 5, in `task4/report/`. Trends are log-linear
 fits of the annual values from 2003 to 2025 (see point 6 for why 2003).
 
 **1. The 13 pigments carry two signals.** In both regions, one principal component of the monthly
