@@ -1,0 +1,4 @@
+[submodule "external/pigment-retrieval-from-olci"]
+	path = external/pigment-retrieval-from-olci
+	url = https://github.com/Kissyfur/pigment-retrieval-from-olci.git
+	ignore = dirty

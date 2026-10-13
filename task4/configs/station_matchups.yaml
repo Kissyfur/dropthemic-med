@@ -1,0 +1,62 @@
+# Daily radiometry cubes at the sampling stations, for every day from the start of the record
+# to today. They are built like the training matchups of retrieval-from-space (same window,
+# interpolation, cloud mask and transforms), but the rows have no target: they are for
+# station time series and for predicting with a trained model.
+#
+#   python task4/scripts/station_matchups.py task4/configs/station_matchups.yaml
+#
+# A copernicus-matchup data config, plus the `stations`, `period`, `box_margin` and
+# `output_root` keys that the script reads.
+
+stations:                      # coordinates as in ps_mtag.csv, where the training cubes sit
+  BBMO: [41.665, 2.805]        # Blanes Bay Microbial Observatory
+  SOLA: [42.488702, 3.142906]  # Banyuls-sur-Mer, coastal
+  MOLA: [42.505556, 3.700000]  # Banyuls-sur-Mer, offshore
+  VIDA: [45.500000, 13.600000] # Piran, Gulf of Trieste (rounded in ps_mtag.csv)
+
+period: {start: 1997-09-16, end: 2026-10-12}
+box_margin: 0.15               # degrees around each station downloaded once; wider than the window
+output_root: task4/data/station_matchups
+
+target:
+  path: stations.csv           # written by the script, one table per station
+  target_column: target        # left empty
+  keep_missing_targets: true
+  include_spatial_metadata: false
+  include_day_metadata: false
+  include_cyclic_day_metadata: false
+
+products:
+  - name: reflectance
+    dataset_ids: [cmems_obs-oc_med_bgc-reflectance_my_l3-multi-1km_P1D]
+    feature_group: optics
+    variables: [RRS412, RRS443, RRS490, RRS510, RRS555, RRS670]
+    preprocess:
+      interpolate_dims: [lat, lon, time]
+      positive_quantile: 0.05
+      # Per cube: each sample is floored by its own window, so a cube does not depend on
+      # which other dates are processed with it, and matches how training cubes were made.
+      positive_quantile_dims: [time, lat, lon]
+      log: true
+      add_cloud_land_masks: true
+      mask_kinds: [cloud_mask]
+      min_valid_ratio: 0.001     # drops only windows without a single retrieval
+
+matchup:
+  lat_window: 0.06
+  lon_window: 0.06
+  time_window_days: 14
+  lat_threshold: 0.1
+  lon_threshold: 0.1
+  time_threshold_days: 1
+  # Days within two weeks of either end of the record get a shorter window; drop them
+  # rather than mix cubes of different lengths.
+  require_full_time_window: true
+
+preprocess:
+  positive_quantile: null
+  log_products: false
+  add_cloud_land_masks: false
+  fillna: 0.0
+  time_limit: 15
+  time_selection: centered
