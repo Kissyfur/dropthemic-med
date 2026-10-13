@@ -126,4 +126,48 @@ Months with fewer than 3 days of data are left out. All the maps of a pigment sh
 scale. The record joins several sensors (SeaWiFS, MODIS, VIIRS, OLCI), so a change between years
 can come from a change of sensor rather than of the plankton.
 
-The analysis is still to come.
+### Analysis
+
+A first look at the pigments, before computing diversity indicators from them. The figures are
+copies of those of step 4, kept in `task4/report/`.
+
+- **Where.** In both regions every pigment is highest in the river plumes and along the coast (the
+  Po in the western north Adriatic, the Rhône in the Gulf of Lion) and lowest offshore. The
+  regional median of the annual mean chlorophyll a is 0.40–0.93 mg m⁻³ in the north Adriatic and
+  0.22–0.34 mg m⁻³ in the NW Mediterranean.
+- **When.** At BBMO, SOLA and MOLA most pigments peak between January and March (the late-winter
+  bloom) and are lowest in July–August; zeaxanthin peaks in May and changes little over the year.
+  At VIDA, chlorophyll a and fucoxanthin peak in November.
+- **Year to year.** The north Adriatic varies strongly, with all pigments together: highest in
+  1998, 2001, 2010–2011 and 2024, lowest in 2022–2023. This probably follows the Po discharge
+  (2022 was a year of severe drought in the Po basin), to be checked with river data.
+- **Long term.** In the NW Mediterranean most pigments decrease. From 2005–2011 to 2019–2025 the
+  regional chlorophyll a falls 13% and fucoxanthin 26%, while zeaxanthin rises 8%; at BBMO,
+  chlorophyll a falls 25% and fucoxanthin 43%. Less diatom pigment and relatively more zeaxanthin
+  (picocyanobacteria) is the kind of community change the diversity indicators should measure.
+- **Sensor change.** At the four stations chlorophyll a is 22–38% lower in 2005–2025 than in
+  1998–2002, mostly through a step around 2003, and offshore zeaxanthin steps up at the same time
+  in both regions. The step coincides with MODIS-Aqua joining the record in mid-2002, so it is
+  more likely instrumental than ecological: trends should start in 2003, or be checked sensor by
+  sensor.
+- **Limits.** The model's chlorophyll a does not go below about 0.1 mg m⁻³, so the clearest summer
+  waters are probably overestimated. The coastal stations have few clear pixels around them: 13%
+  of the pixel-days at SOLA and 17% at BBMO, against 27% at VIDA and 50% at MOLA. VIDA is at the
+  Vida buoy (45.5488 N, 13.5505 E); ps_mtag.csv rounds it to 45.5 N, 13.6 E, which is on land.
+
+<p>
+  <img src="task4/report/nw_mediterranean_periods.png" width="49%"
+       alt="The 13 pigments in the NW Mediterranean, mean of 1998-2004, 2005-2011, 2012-2018 and 2019-2025">
+  <img src="task4/report/north_adriatic_periods.png" width="49%"
+       alt="The 13 pigments in the north Adriatic, mean of 1998-2004, 2005-2011, 2012-2018 and 2019-2025">
+</p>
+
+*The 13 pigments over four periods: NW Mediterranean (left) and north Adriatic (right). Circles
+are the stations.*
+
+<p>
+  <img src="task4/report/BBMO_monthly.png" width="49%" alt="Monthly pigments around BBMO, 1997-2026">
+  <img src="task4/report/VIDA_monthly.png" width="49%" alt="Monthly pigments around VIDA, 1997-2026">
+</p>
+
+*Monthly pigments around BBMO (left) and VIDA (right), with their 12-month running mean.*
