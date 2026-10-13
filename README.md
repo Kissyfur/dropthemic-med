@@ -189,9 +189,9 @@ can come from a change of sensor rather than of the plankton.
 
 ### Analysis
 
-A first look at the pigments before computing diversity indicators from them, compared with the
+A first look at the pigments and at the plankton groups derived from them, compared with the
 literature. The figures are copies of those of step 5, in `task4/report/`. Trends are log-linear
-fits of the annual values from 2003 to 2025 (see point 6 for why 2003).
+fits of the annual values from 2003 to 2025 (see point 7 for why 2003).
 
 **1. The 13 pigments carry two signals.** In both regions, one principal component of the monthly
 maps, with all pigments rising and falling with chlorophyll a, explains 81–83% of the variance. A
@@ -271,7 +271,29 @@ decade, p = 0.001).
 *Annual mean chlorophyll a in the north Adriatic: the Po plume, strong in 2001, 2010 and 2024 and
 weak in 2003 and 2022.*
 
-**6. What the model and the record do.**
+**6. Plankton groups: Synechococcus follows the zeaxanthin signal.** Of the PETRIMED plankton
+groups, only Synechococcus holds from the satellite pigments (Task 2). Around the three NW
+Mediterranean stations it peaks in July and is 2.5 times lower in winter, as observed at BBMO (peak
+in August), and its monthly values follow the satellite share of zeaxanthin (r = 0.55–0.71): it
+carries the zeaxanthin side of the second signal of point 1. Bathycoccus peaks in winter
+(December–March), like the prasinophytes at BBMO (Nunes et al., 2018), but the maps put it
+offshore rather than on the coast, so only its seasonal cycle is usable. From 2003 to 2025 neither
+group changes significantly over the regions (Synechococcus +1% per decade), while at BBMO
+Synechococcus falls 16% per decade. At VIDA, Synechococcus peaks in May and goes against the
+zeaxanthin share (r = −0.66), a sign that the models, made in the NW Mediterranean, do not hold
+there: the VIDA data of Task 3 will test it.
+
+<p>
+  <img src="task4/report/psts_nw_mediterranean_periods.png" width="49%"
+       alt="Synechococcus and Bathycoccus in the NW Mediterranean, mean of four periods">
+  <img src="task4/report/psts_BBMO_monthly.png" width="49%"
+       alt="Monthly Synechococcus and Bathycoccus around BBMO, 1997-2026">
+</p>
+
+*Synechococcus and Bathycoccus (pico, psbO RPKM) from the satellite pigments: NW Mediterranean over
+four periods (left) and monthly around BBMO (right).*
+
+**7. What the model and the record do.**
 - *A step in 2002–2003.* From 1998–2002 to 2003–2007, chlorophyll a drops 13–30% at the four
   stations (alloxanthin up to 47%), and offshore zeaxanthin jumps in both regions (+17% for the
   regional median in the NW Mediterranean). It coincides with MODIS-Aqua and MERIS joining SeaWiFS, despite the inter-sensor
