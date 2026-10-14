@@ -153,6 +153,43 @@ This writes the 13 pigments, in mg m⁻³, to `task4/data/pigments/`:
 `--only monthly` or `--only stations` predicts one of the two. For other files, the environment
 also has the `predict-pigments` command of Task 1 (see its README).
 
+*Check against HPLC.* The Task 2 samples (SOLA, BBMO and MOLA, 196 in 2004–2021) have HPLC
+pigments; 92 of them have satellite data on their day (46 at BBMO, 42 at SOLA, 4 at MOLA):
+
+```bash
+python task4/scripts/check_pigments.py
+```
+
+This compares each sample with the median of that day's satellite pigments around its station,
+with the metrics of Task 1 on ln(pigment), and writes `task4/data/pigments/hplc_check.csv` (also
+per station) and `task4/figures/pigments/hplc_check.png`. Over the 92 matchups:
+
+| Pigment | r (log) | MAPE | Bias (MPE) |
+|---|---|---|---|
+| Chlorophyll a | 0.76 | 39% | −22% |
+| Chlorophyll c (HPLC: c2 only) | 0.74 | 48% | −32% |
+| Fucoxanthin | 0.72 | 70% | −53% |
+| Alloxanthin | 0.66 | 83% | −18% |
+| Diadinoxanthin | 0.60 | 59% | −16% |
+| Chlorophyll b | 0.58 | 92% | +21% |
+| 19'-hexanoyloxyfucoxanthin | 0.45 | 62% | −56% |
+| β-carotene | 0.45 | 54% | +13% |
+| 19'-butanoyloxyfucoxanthin | 0.44 | 65% | −57% |
+| Peridinin | 0.42 | 130% | +55% |
+| Zeaxanthin | −0.04 | 259% | +243% |
+
+The satellite pigments follow the HPLC ones for chlorophylls a and c, fucoxanthin, alloxanthin and
+diadinoxanthin, but miss the highest values (the SOLA samples of 2015–2016). The haptophyte and
+pelagophyte pigments barely vary, and zeaxanthin not at all: it stays near 0.04 mg m⁻³, 3.4 times
+the HPLC values on average. Part of the gap is the scale: a point sample against the median of
+about 10 × 10 km around a coastal station.
+
+<p align="center">
+  <img src="task4/report/hplc_check.png" width="80%" alt="Satellite against HPLC pigments at SOLA, BBMO and MOLA">
+</p>
+
+*Satellite (Task 1) against HPLC pigments on the same day, at the Task 2 stations.*
+
 **4. Plankton groups.** The Task 2 models on the satellite pigments. It needs Task 2:
 
 ```bash
@@ -295,11 +332,15 @@ decade, p = 0.001).
 *Annual mean chlorophyll a in the north Adriatic: the Po plume, strong in 2001, 2010 and 2024 and
 weak in 2003 and 2022.*
 
-**6. Plankton groups: Synechococcus follows the zeaxanthin signal.** Of the PETRIMED plankton
-groups, only Synechococcus holds from the satellite pigments (step 4). Around the three NW
-Mediterranean stations it peaks in July and is 2.5 times lower in winter, as observed at BBMO (peak
-in August), and its monthly values follow the satellite share of zeaxanthin (r = 0.55–0.71): it
-carries the zeaxanthin side of the second signal of point 1. Bathycoccus peaks in winter
+**6. Plankton groups: Synechococcus follows low chlorophyll.** Of the PETRIMED plankton groups,
+only Synechococcus holds from the satellite pigments (step 4). Around the three NW Mediterranean
+stations it peaks in July and is 2.5 times lower in winter, as observed at BBMO (peak in August),
+and its monthly values follow the satellite share of zeaxanthin (r = 0.55–0.71). But the satellite
+zeaxanthin barely varies (step 3: coefficient of variation 0.11–0.17 at the stations, against
+0.44–0.60 for chlorophyll a), so its share is almost the inverse of chlorophyll a (r = −0.97): the
+indicator is mostly a low-chlorophyll, oligotrophy signal. It holds because Synechococcus follows
+that signal too: at BBMO the observed Synechococcus goes with the HPLC share of zeaxanthin (r = 0.53)
+and against chlorophyll a (r = −0.28). Bathycoccus peaks in winter
 (December–March), like the prasinophytes at BBMO (Nunes et al., 2018), but the maps put it
 offshore rather than on the coast, so only its seasonal cycle is usable. From 2003 to 2025 neither
 group changes significantly over the regions (Synechococcus +1% per decade), while at BBMO
@@ -328,6 +369,10 @@ four periods (left) and monthly around BBMO (right).*
 - *Few clear coastal pixels.* There are satellite data on 13% of the pixel-days around SOLA and 17%
   around BBMO, against 27% at VIDA and 50% at MOLA. VIDA is at the Vida buoy (45.5488 N, 13.5505
   E); ps_mtag.csv rounds it to 45.5 N, 13.6 E, which is on land.
+- *Composition at the stations.* Against the HPLC samples of Task 2 (step 3), the satellite
+  chlorophyll a follows well (r = 0.76) but zeaxanthin does not (r = −0.04), and the haptophyte and
+  pelagophyte pigments only weakly (r = 0.44–0.45): the composition signal of point 1 is weaker at
+  the coast than the biomass signal.
 
 <p align="center">
   <img src="task4/report/nw_mediterranean_zeaxa_years.png" width="80%"
