@@ -1,6 +1,6 @@
 """Download a daily Copernicus Marine dataset over regional boxes and average it by month.
 
-    python task4/scripts/download_monthly_means.py task4/configs/med_radiometry_monthly.yaml [--dry-run]
+    python task1/scripts/download_monthly_means.py task1/configs/med_radiometry_monthly.yaml [--dry-run]
 
 For each region in the config, writes <output_dir>/<region>_monthly.nc. It holds one mean per
 calendar month for every variable, over the days with a valid value, stamped with the first day
@@ -160,7 +160,7 @@ def process_region(config: dict, name: str, box: dict, layout: tuple, dry_run: b
     end = min(_as_date(config.get("end")) or last, last)
     variables = list(config["variables"])
     lat, lon = box["lat"], box["lon"]
-    output_dir = Path(config.get("output_dir", "task4/data/radiometry_monthly"))
+    output_dir = Path(config.get("output_dir", "task1/data/radiometry_monthly"))
     parts_dir, daily_dir = output_dir / "parts" / name, output_dir / "daily"
     # A part is reused only if it was made for exactly this request.
     request = json.dumps(

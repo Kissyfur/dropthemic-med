@@ -15,7 +15,7 @@ predicted and observed abundance, from
 - the HPLC pigments (hplc), also at SOLA (mostly training samples);
 - the HPLC pigments with prasinoxanthin, which Task 1 does not estimate, replaced by
   PRASINO_PER_CHLB x chlorophyll b (no_prasino).
-The results go to task2/data/transferability.csv, and task2/figures/bbmo_check.png shows the
+The results go to task2/data/transferability.csv, and task2/figures/insitu_check.png shows the
 observed and predicted abundance at BBMO of the PSTs in CHECK.
 """
 from __future__ import annotations
@@ -30,7 +30,7 @@ import xgboost as xgb
 MODELS_DIR = Path("task2/data/models")
 DATA_DIR = Path("task2/PETRIMED/DATA")
 OUTPUT = Path("task2/data/transferability.csv")
-FIGURE = Path("task2/figures/bbmo_check.png")
+FIGURE = Path("task2/figures/insitu_check.png")
 CHECK = ["Micromonas", "Synechococcus", "Pelagophyceae", "Bathycoccus"]
 
 # The pigments of the models, in their order

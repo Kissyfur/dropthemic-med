@@ -1,8 +1,8 @@
-"""Figures of the Task 4 pigments and plankton groups (PSTs), for a first look before the analysis.
+"""Figures of the satellite pigments (Task 1) and plankton groups (PSTs, Task 2), for the analysis.
 
     python task4/scripts/figures.py
 
-For the pigments (task4/data/pigments) and the PSTs (task4/data/psts), writes to
+For the pigments (task1/data/pigments) and the PSTs (task2/data/psts), writes to
 task4/figures/<pigments|psts>:
 - <region>/<variable>_years.png, from <region>_monthly.nc: the mean of each complete year, one map
   per year;
@@ -26,8 +26,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap, LogNorm  # noqa: E402
 
-DATA_DIR = Path("task4/data")
-STATIONS_CONFIG = Path("task4/configs/station_matchups.yaml")
+DATA_DIRS = {"pigments": Path("task1/data/pigments"), "psts": Path("task2/data/psts")}
+STATIONS_CONFIG = Path("task1/configs/station_matchups.yaml")
 OUTPUT_DIR = Path("task4/figures")
 MIN_DAYS = 3
 PERIODS = 4
@@ -185,18 +185,18 @@ def plot_station(monthly: xr.Dataset, station: str, path: Path) -> None:
 
 def main() -> int:
     stations = yaml.safe_load(STATIONS_CONFIG.read_text(encoding="utf-8"))["stations"]
-    for kind in ["pigments", "psts"]:
-        if not (DATA_DIR / kind).is_dir():
+    for kind, data_dir in DATA_DIRS.items():
+        if not data_dir.is_dir():
             continue
-        for path in sorted((DATA_DIR / kind).glob("*_monthly.nc")):
+        for path in sorted(data_dir.glob("*_monthly.nc")):
             if path.name != "stations_monthly.nc":
                 region_maps(path, stations, OUTPUT_DIR / kind)
 
         if kind == "pigments":
-            with xr.open_dataset(DATA_DIR / kind / "stations_daily.nc") as daily:
+            with xr.open_dataset(data_dir / "stations_daily.nc") as daily:
                 monthly = monthly_medians(daily.load())
         else:
-            monthly = xr.load_dataset(DATA_DIR / kind / "stations_monthly.nc")
+            monthly = xr.load_dataset(data_dir / "stations_monthly.nc")
         output_dir = OUTPUT_DIR / kind / "stations"
         output_dir.mkdir(parents=True, exist_ok=True)
         for station in monthly["station"].values:

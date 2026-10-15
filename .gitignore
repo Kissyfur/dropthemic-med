@@ -4,12 +4,13 @@ __pycache__/
 .idea/
 .ipynb_checkpoints/
 
-# Downloaded and generated data
-task4/data/
+# Downloaded and generated data and figures
+task1/data/
+task1/figures/
+task2/data/
+task2/figures/
 task4/figures/
 predictions/
 
-# Task 2: the PETRIMED clone and the models exported from it
+# Task 2: the local PETRIMED clone
 task2/PETRIMED/
-task2/data/
-task2/figures/

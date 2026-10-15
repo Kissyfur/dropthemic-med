@@ -2,8 +2,8 @@
 # record (September 1997) to the latest day available.
 #
 #   copernicusmarine login                                      # once
-#   python task4/scripts/download_monthly_means.py task4/configs/med_radiometry_monthly.yaml --dry-run
-#   python task4/scripts/download_monthly_means.py task4/configs/med_radiometry_monthly.yaml
+#   python task1/scripts/download_monthly_means.py task1/configs/med_radiometry_monthly.yaml --dry-run
+#   python task1/scripts/download_monthly_means.py task1/configs/med_radiometry_monthly.yaml
 #
 # Writes <output_dir>/<region>_monthly.nc with one mean per month of every year. Copernicus
 # only publishes this record as daily images, so the script downloads the daily data and
@@ -21,7 +21,7 @@ log: true                 # then take the natural log
 start: 1997-09-16      # first day of the record
 end: null              # null: up to the latest day available
 
-output_dir: task4/data/radiometry_monthly
+output_dir: task1/data/radiometry_monthly
 keep_daily: false      # true also keeps the daily data (~6 GB and ~22 GB uncompressed)
 
 regions:

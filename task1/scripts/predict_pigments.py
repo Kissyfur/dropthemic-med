@@ -1,14 +1,14 @@
 """Pigment concentrations from the Task 4 radiometry, with the Task 1 model.
 
-    python task4/scripts/predict_pigments.py [--only monthly|stations]
+    python task1/scripts/predict_pigments.py [--only monthly|stations]
 
 Uses multi_sat_ft/concatenatedCNN of pigment-retrieval-from-olci, the CNN for the 5 multi-sensor
 bands fine-tuned with satellite matchups. Both inputs already hold ln(Rrs), floored at their 5%
-quantile, so no transform is applied here. Writes to task4/data/pigments:
-- <region>_monthly.nc for each task4/data/radiometry_monthly/<region>_monthly.nc: the 13
+quantile, so no transform is applied here. Writes to task1/data/pigments:
+- <region>_monthly.nc for each task1/data/radiometry_monthly/<region>_monthly.nc: the 13
   pigments on the same (time, latitude, longitude) grid, plus its `valid_days`. Means of one or
   two days can be unrealistic: filter on `valid_days`.
-- stations_daily.nc from the station cubes, task4/data/station_matchups/datasets/optics.nc: the
+- stations_daily.nc from the station cubes, task1/data/station_matchups/datasets/optics.nc: the
   pigments of the 11 x 9 pixels around each station on each day, as (station, time, lat_pixel,
   lon_pixel). Only the cube's centre day is used, and only its pixels with a retrieval
   (cloud_mask 0): the gaps that the cubes fill by interpolation stay empty.
@@ -31,10 +31,10 @@ from pigment_retrieval.predict.predict import Predictor  # noqa: E402
 logger = logging.getLogger("predict_pigments")
 
 MODEL = "multi_sat_ft/concatenatedCNN"
-MONTHLY_DIR = Path("task4/data/radiometry_monthly")
-STATION_CUBES = Path("task4/data/station_matchups/datasets/optics.nc")
-STATIONS_CONFIG = Path("task4/configs/station_matchups.yaml")
-OUTPUT_DIR = Path("task4/data/pigments")
+MONTHLY_DIR = Path("task1/data/radiometry_monthly")
+STATION_CUBES = Path("task1/data/station_matchups/datasets/optics.nc")
+STATIONS_CONFIG = Path("task1/configs/station_matchups.yaml")
+OUTPUT_DIR = Path("task1/data/pigments")
 
 PIGMENT_NAMES = {
     "chlid": "chlorophyllide a", "chl_a": "chlorophyll a", "chl_b": "chlorophyll b",

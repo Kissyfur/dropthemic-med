@@ -1,39 +1,36 @@
-"""Plankton groups (PSTs) from the Task 4 satellite pigments, with the PETRIMED models of Task 2.
+"""Plankton groups (PSTs) from the satellite pigments of Task 1, with the PETRIMED models.
 
-    python task4/scripts/predict_psts.py [--check-only]
+    python task2/scripts/predict_psts.py [--check-only]
 
 1. Harmonization. The composition of the satellite pigments of Task 1 is outside the one the models
    learned (e.g. a zeaxanthin share around 0.10, against about 0.01 at SOLA). Each pigment share is
    mapped by quantiles from its distribution in the satellite record at the NW Mediterranean
    stations (median of each month around each station) onto its distribution in the HPLC samples
-   of SOLA and MOLA. The quantiles go to task4/data/psts/pigment_quantiles.csv.
+   of SOLA and MOLA. The quantiles go to task2/data/psts/pigment_quantiles.csv.
 2. Check at BBMO, which the harmonization does not use: Pearson correlation between the abundance
    observed in each BBMO sample (2004-2014) and the one predicted from the satellite pigments of
    its month, as they are and harmonized, also for the mean seasonal cycle, for the pico PSTs of
-   psbo and mags. Writes task4/data/psts/satellite_check.csv and task4/figures/psts/bbmo_check.png.
+   psbo and mags. Writes task2/data/psts/satellite_check.csv and task2/figures/satellite_check.png.
 3. Prediction, from the harmonized pigments, of the PSTs in PSTS, those with some skill in the check:
-   - <region>_monthly.nc, from task4/data/pigments/<region>_monthly.nc, plus its `valid_days`;
+   - <region>_monthly.nc, from task1/data/pigments/<region>_monthly.nc, plus its `valid_days`;
    - stations_monthly.nc, from the monthly median of the pigments around each station.
 --check-only stops after step 2.
 """
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import psts
 import xarray as xr
 
-sys.path.insert(0, "task2/scripts")
-import psts  # noqa: E402
-
-PIGMENT_DIR = Path("task4/data/pigments")
-OUTPUT_DIR = Path("task4/data/psts")
+PIGMENT_DIR = Path("task1/data/pigments")
+OUTPUT_DIR = Path("task2/data/psts")
 QUANTILES = OUTPUT_DIR / "pigment_quantiles.csv"
 CHECK = OUTPUT_DIR / "satellite_check.csv"
-FIGURE = Path("task4/figures/psts/bbmo_check.png")
+FIGURE = Path("task2/figures/satellite_check.png")
 MIN_DAYS = 3
 # Predicted PSTs: (method, fraction)
 PSTS = {"Synechococcus": ("psbo", "pico"), "Bathycoccus": ("psbo", "pico")}

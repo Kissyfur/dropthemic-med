@@ -3,7 +3,7 @@
 # interpolation, cloud mask and transforms), but the rows have no target: they are for
 # station time series and for predicting with a trained model.
 #
-#   python task4/scripts/station_matchups.py task4/configs/station_matchups.yaml
+#   python task1/scripts/station_matchups.py task1/configs/station_matchups.yaml
 #
 # A copernicus-matchup data config, plus the `stations`, `period`, `box_margin` and
 # `output_root` keys that the script reads.
@@ -16,7 +16,7 @@ stations:                      # coordinates as in ps_mtag.csv, except VIDA
 
 period: {start: 1997-09-16, end: 2026-10-12}
 box_margin: 0.15               # degrees around each station downloaded once; wider than the window
-output_root: task4/data/station_matchups
+output_root: task1/data/station_matchups
 
 target:
   path: stations.csv           # written by the script, one table per station

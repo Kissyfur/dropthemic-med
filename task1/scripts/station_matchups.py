@@ -1,6 +1,6 @@
 """Matchup cubes for fixed stations on every day of a period, for prediction rather than training.
 
-    python task4/scripts/station_matchups.py task4/configs/station_matchups.yaml [--station NAME ...]
+    python task1/scripts/station_matchups.py task1/configs/station_matchups.yaml [--station NAME ...]
 
 The config is a copernicus-matchup data config plus four keys read here: `stations`
 (name: [lat, lon]), `period` (start, end), `box_margin` (degrees) and `output_root`. For each
@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     unknown = sorted(set(args.station or []) - set(stations))
     if unknown:
         parser.error(f"unknown station(s): {unknown}; the config has {sorted(stations)}")
-    root = Path(config.get("output_root", "task4/data/station_matchups"))
+    root = Path(config.get("output_root", "task1/data/station_matchups"))
 
     for station in args.station or stations:
         lat, lon = stations[station]
