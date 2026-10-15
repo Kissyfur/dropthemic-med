@@ -8,7 +8,8 @@ preparation), *Inferring plankton biodiversity combining meta-omics and pigment 
 towards satellite monitoring*. They are XGBoost models trained at SOLA in 2015–2016 that predict
 the abundance of plankton sequence types (PSTs) in the pico (0.2–3 µm) and nano (3–20 µm)
 fractions from the relative composition of 12 HPLC pigments, with the PSTs measured three ways:
-psbO gene (psbo), metagenome-assembled genomes (mags) and metabarcoding (metab).
+psbO gene, metagenome-assembled genomes and metabarcoding. Here the pico psbO models are used,
+those that transfer best.
 
 Run everything from the repository root. `task2/PETRIMED`, `task2/data/` and `task2/figures/` are
 not kept in git.
@@ -26,7 +27,7 @@ python task2/scripts/psts.py
   validation correlation of at least 0.6, as xgboost JSON for Python. It needs R with the xgboost
   package (`install.packages("xgboost")`): the models were saved with xgboost 2 or later.
 - `psts.py` predicts as PETRIMED does (pigments relative to their total, mean of the models), with
-  the same results as in R, and tests the pico models on the HPLC pigments of BBMO (100 samples,
+  the same results as in R, and tests the models on the HPLC pigments of BBMO (100 samples,
   2004–2014) and MOLA (7, 2020–2021), where they were not trained. It writes
   `task2/data/transferability.csv` and `task2/figures/insitu_check.png`.
 
@@ -42,8 +43,7 @@ Correlation between predicted and observed abundance, for the psbO PSTs best pre
 
 - Validation at SOLA is the mean correlation of the averaged models on PETRIMED's validation
   samples; it is optimistic, since the models were kept for scoring at least 0.6 on them. Away
-  from SOLA, 4 of the 18 psbO PSTs keep r ≥ 0.5 at BBMO, and none of the 9 MAG PSTs (Synechococcus
-  and Micromonas are the best, 0.48).
+  from SOLA, 4 of the 18 psbO PSTs keep r ≥ 0.5 at BBMO.
 - The models follow the timing of these PSTs at BBMO but miss the size of their peaks.
 - Prasinoxanthin, which Task 1 does not estimate, can be replaced by 0.30 × chlorophyll b, their
   ratio at SOLA: r changes by 0.06 at most.
@@ -75,9 +75,9 @@ from the satellite pigments of the month of each sample:
 | Bathycoccus | 0.51 | 0.18 | 0.22 | **0.54** |
 
 - From the satellite pigments as they are, no PST holds and the seasonal cycles come out inverted.
-  Harmonized, Synechococcus holds, also with the MAG models (0.48 monthly, 0.68 seasonal), and so
-  does the seasonal cycle of Bathycoccus; no other PST does. The harmonization was chosen after
-  seeing the failure: it is a hypothesis that this check supports, not a validated method.
+  Harmonized, Synechococcus holds, and so does the seasonal cycle of Bathycoccus; no other PST
+  does. The harmonization was chosen after seeing the failure: it is a hypothesis that this check
+  supports, not a validated method.
 - The satellite zeaxanthin barely varies (Task 1, step 4), so its share is almost the inverse of
   chlorophyll a: the Synechococcus indicator is mostly a low-chlorophyll signal, which the observed
   Synechococcus also follows at BBMO.

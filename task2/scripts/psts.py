@@ -9,9 +9,9 @@ the PSTs: psbO gene (psbo), metagenome-assembled genomes (mags) and metabarcodin
 export_models.R exports the models with a validation correlation of at least 0.6, which PETRIMED
 averages, to task2/data/models.
 
-The pico models of psbo and mags are tested on the HPLC pigments of BBMO (100 samples, 2004-2014)
-and MOLA (7, 2020-2021), where they were not trained, with the Pearson correlation between
-predicted and observed abundance, from
+The pico psbo models are tested on the HPLC pigments of BBMO (100 samples, 2004-2014) and MOLA (7,
+2020-2021), where they were not trained, with the Pearson correlation between predicted and
+observed abundance, from
 - the HPLC pigments (hplc), also at SOLA (mostly training samples);
 - the HPLC pigments with prasinoxanthin, which Task 1 does not estimate, replaced by
   PRASINO_PER_CHLB x chlorophyll b (no_prasino).
@@ -117,35 +117,33 @@ def plot_check(dates: pd.Series, series: dict, title: str, path: Path) -> None:
 
 
 def main() -> int:
-    summary = pd.read_csv(MODELS_DIR / "summary.csv")
+    summary = pd.read_csv(MODELS_DIR / "summary.csv").query("method == 'psbo' and fraction == 'pico'")
+    pico = read_insitu("psbo").query("SF == 'PICO'")
+    # Pigments made relative within each station, as PETRIMED
+    inputs = {
+        "hplc": pico.groupby("ST", group_keys=False)[PIGMENTS].apply(relative),
+        "no_prasino": pico.groupby("ST", group_keys=False)[PIGMENTS]
+                          .apply(lambda g: relative(estimate_prasinoxanthin(g))),
+    }
     rows, check = [], {}
-    for method in ["psbo", "mags"]:
-        pico = read_insitu(method).query("SF == 'PICO'")
-        # Pigments made relative within each station, as PETRIMED
-        inputs = {
-            "hplc": pico.groupby("ST", group_keys=False)[PIGMENTS].apply(relative),
-            "no_prasino": pico.groupby("ST", group_keys=False)[PIGMENTS]
-                              .apply(lambda g: relative(estimate_prasinoxanthin(g))),
-        }
-        for row in summary.query("method == @method and fraction == 'pico'").itertuples():
-            models = load_models(method, "pico", row.pst)
-            result = {"method": method, "fraction": "pico", "pst": row.pst, "models": row.models,
-                      "cor_valid": row.cor_valid}
-            for name, x in inputs.items():
-                predicted = pd.Series(predict(models, x), index=x.index)
-                for station in ["SOLA", "BBMO", "MOLA"]:
-                    at = pico.index[pico["ST"] == station]
-                    result[f"r_{station}_{name}"], result[f"n_{station}_{name}"] = pearson(
-                        pico.loc[at, row.pst], predicted[at])
-                if method == "psbo" and row.pst in CHECK and name == "hplc":
-                    at = pico.index[pico["ST"] == "BBMO"]
-                    check[row.pst] = {"observed": pico.loc[at, row.pst], "HPLC pigments": predicted[at]}
-            rows.append(result)
+    for row in summary.itertuples():
+        models = load_models("psbo", "pico", row.pst)
+        result = {"pst": row.pst, "models": row.models, "cor_valid": row.cor_valid}
+        for name, x in inputs.items():
+            predicted = pd.Series(predict(models, x), index=x.index)
+            for station in ["SOLA", "BBMO", "MOLA"]:
+                at = pico.index[pico["ST"] == station]
+                result[f"r_{station}_{name}"], result[f"n_{station}_{name}"] = pearson(
+                    pico.loc[at, row.pst], predicted[at])
+            if row.pst in CHECK and name == "hplc":
+                at = pico.index[pico["ST"] == "BBMO"]
+                check[row.pst] = {"observed": pico.loc[at, row.pst], "HPLC pigments": predicted[at]}
+        rows.append(result)
     table = pd.DataFrame(rows)
     table.to_csv(OUTPUT, index=False, float_format="%.3f")
-    plot_check(read_insitu("psbo")["Date"], {pst: check[pst] for pst in CHECK},
+    plot_check(pico["Date"], {pst: check[pst] for pst in CHECK},
                "PETRIMED models (pico, psbO) at BBMO, where they were not trained", FIGURE)
-    print(table[["method", "pst", "models", "cor_valid", "r_BBMO_hplc", "r_BBMO_no_prasino", "r_MOLA_hplc"]]
+    print(table[["pst", "models", "cor_valid", "r_BBMO_hplc", "r_BBMO_no_prasino", "r_MOLA_hplc"]]
           .round(2).to_string(index=False))
     print(f"{OUTPUT}, {FIGURE}")
     return 0

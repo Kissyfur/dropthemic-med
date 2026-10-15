@@ -9,8 +9,8 @@
    of SOLA and MOLA. The quantiles go to task2/data/psts/pigment_quantiles.csv.
 2. Check at BBMO, which the harmonization does not use: Pearson correlation between the abundance
    observed in each BBMO sample (2004-2014) and the one predicted from the satellite pigments of
-   its month, as they are and harmonized, also for the mean seasonal cycle, for the pico PSTs of
-   psbo and mags. Writes task2/data/psts/satellite_check.csv and task2/figures/satellite_check.png.
+   its month, as they are and harmonized, also for the mean seasonal cycle, for the pico psbo PSTs.
+   Writes task2/data/psts/satellite_check.csv and task2/figures/satellite_check.png.
 3. Prediction, from the harmonized pigments, of the PSTs in PSTS, those with some skill in the check:
    - <region>_monthly.nc, from task1/data/pigments/<region>_monthly.nc, plus its `valid_days`;
    - stations_monthly.nc, from the monthly median of the pigments around each station.
@@ -32,8 +32,8 @@ QUANTILES = OUTPUT_DIR / "pigment_quantiles.csv"
 CHECK = OUTPUT_DIR / "satellite_check.csv"
 FIGURE = Path("task2/figures/satellite_check.png")
 MIN_DAYS = 3
-# Predicted PSTs: (method, fraction)
-PSTS = {"Synechococcus": ("psbo", "pico"), "Bathycoccus": ("psbo", "pico")}
+# Predicted PSTs (pico, psbo)
+PSTS = ["Synechococcus", "Bathycoccus"]
 # The pigments of the models with their name in Task 1, which has no prasinoxanthin
 TASK1 = {"Chl_C2": "chc12", "Peridinine": "perid", "X19BF": "btfcx", "Fucoxanthin": "fucox", "X19HF": "hxfcx",
          "Diadinoxanthin": "diadi", "Alloxanthin": "allox", "Zeaxanthin": "zeaxa", "Chl_b": "chl_b",
@@ -77,34 +77,33 @@ def harmonize(shares: pd.DataFrame) -> pd.DataFrame:
 
 
 def check(satellite: pd.DataFrame) -> pd.DataFrame:
-    summary = pd.read_csv(psts.MODELS_DIR / "summary.csv")
+    summary = pd.read_csv(psts.MODELS_DIR / "summary.csv").query("method == 'psbo' and fraction == 'pico'")
+    bbmo = psts.read_insitu("psbo").query("SF == 'PICO' and ST == 'BBMO'")
+    months = bbmo["Date"].dt.to_period("M").dt.to_timestamp()
+    pigments = from_task1(satellite.reindex(pd.MultiIndex.from_arrays([bbmo["ST"], months]))
+                          .set_axis(bbmo.index)).dropna()
+    inputs = {"satellite": psts.relative(pigments), "harmonized": harmonize(psts.relative(pigments))}
+    month = bbmo["Date"].dt.month
     rows, series = [], {}
-    for method in ["psbo", "mags"]:
-        bbmo = psts.read_insitu(method).query("SF == 'PICO' and ST == 'BBMO'")
-        months = bbmo["Date"].dt.to_period("M").dt.to_timestamp()
-        pigments = from_task1(satellite.reindex(pd.MultiIndex.from_arrays([bbmo["ST"], months]))
-                              .set_axis(bbmo.index)).dropna()
-        inputs = {"satellite": psts.relative(pigments), "harmonized": harmonize(psts.relative(pigments))}
-        month = bbmo["Date"].dt.month
-        for row in summary.query("method == @method and fraction == 'pico'").itertuples():
-            models = psts.load_models(method, "pico", row.pst)
-            observed = bbmo[row.pst]
-            result = {"method": method, "pst": row.pst}
-            predicted = {}
-            for name, x in inputs.items():
-                predicted[name] = pd.Series(psts.predict(models, x), index=x.index)
-                result[f"r_{name}"], result["n"] = psts.pearson(observed[x.index], predicted[name])
-                result[f"r_{name}_seasonal"], _ = psts.pearson(observed.groupby(month).mean(),
-                                                               predicted[name].groupby(month[x.index]).mean())
-            rows.append(result)
-            if PSTS.get(row.pst) == (method, "pico"):
-                hplc = psts.relative(bbmo[psts.PIGMENTS])
-                series[row.pst] = {"observed": observed,
-                                   "HPLC pigments": pd.Series(psts.predict(models, hplc), index=hplc.index),
-                                   "harmonized satellite pigments": predicted["harmonized"]}
+    for pst in summary["pst"]:
+        models = psts.load_models("psbo", "pico", pst)
+        observed = bbmo[pst]
+        result = {"pst": pst}
+        predicted = {}
+        for name, x in inputs.items():
+            predicted[name] = pd.Series(psts.predict(models, x), index=x.index)
+            result[f"r_{name}"], result["n"] = psts.pearson(observed[x.index], predicted[name])
+            result[f"r_{name}_seasonal"], _ = psts.pearson(observed.groupby(month).mean(),
+                                                           predicted[name].groupby(month[x.index]).mean())
+        rows.append(result)
+        if pst in PSTS:
+            hplc = psts.relative(bbmo[psts.PIGMENTS])
+            series[pst] = {"observed": observed,
+                           "HPLC pigments": pd.Series(psts.predict(models, hplc), index=hplc.index),
+                           "harmonized satellite pigments": predicted["harmonized"]}
     table = pd.DataFrame(rows)
     table.to_csv(CHECK, index=False, float_format="%.3f")
-    psts.plot_check(psts.read_insitu("psbo")["Date"], series,
+    psts.plot_check(bbmo["Date"], series,
                     "PETRIMED models (pico, psbO) at BBMO from the satellite pigments of each month", FIGURE)
     print(table.round(2).to_string(index=False))
     print(f"{CHECK}, {FIGURE}")
@@ -122,9 +121,9 @@ def predict(pigments: pd.DataFrame, models: dict) -> pd.DataFrame:
 
 
 def describe(data: xr.Dataset, table: pd.DataFrame) -> xr.Dataset:
-    for pst, (method, fraction) in PSTS.items():
-        r = table.query("method == @method and pst == @pst").iloc[0]
-        data[pst].attrs = {"long_name": f"{pst} ({fraction}, {method})", "units": "RPKM",
+    for pst in PSTS:
+        r = table.set_index("pst").loc[pst]
+        data[pst].attrs = {"long_name": f"{pst} (pico, psbO)", "units": "RPKM",
                            "comment": f"r at BBMO from harmonized satellite pigments: {r.r_harmonized:.2f} "
                                       f"monthly, {r.r_harmonized_seasonal:.2f} seasonal cycle"}
     data.attrs["model"] = "PETRIMED XGBoost models (Task 2) on harmonized satellite pigments"
@@ -149,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.check_only:
         return 0
 
-    models = {pst: psts.load_models(method, fraction, pst) for pst, (method, fraction) in PSTS.items()}
+    models = {pst: psts.load_models("psbo", "pico", pst) for pst in PSTS}
     for path in sorted(PIGMENT_DIR.glob("*_monthly.nc")):
         with xr.open_dataset(path) as monthly:
             # One year at a time keeps the memory low
