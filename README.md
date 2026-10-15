@@ -58,7 +58,7 @@ python task2/scripts/psts.py
 python task2/scripts/predict_psts.py
 
 # Task 1 check against the HPLC samples of Task 2, and Task 4 figures
-python task1/scripts/hplc_matchups.py task1/configs/hplc_matchups.yaml
+python task1/scripts/hplc_check.py
 python task4/scripts/figures.py
 ```
 
@@ -67,13 +67,12 @@ python task4/scripts/figures.py
 **Task 1 — Pigments from radiometry** ([details](task1/README.md))
 - The 13 pigments for every day and month of the 1 km multi-sensor record, 1997–2026, in the NW
   Mediterranean and the north Adriatic.
-- Against 92 HPLC samples of SOLA, BBMO and MOLA on the same day: chlorophyll a r = 0.76 (ln),
-  chlorophyll c 0.74, fucoxanthin 0.72; the haptophyte and pelagophyte pigments only 0.44–0.45, and
-  zeaxanthin not at all. The highest values are missed.
-- The matchup is not the limit: the station cubes of the record do as well as the global 4 km
-  matchups the model was fine-tuned with (median r 0.57 against 0.44). Dense networks trained only
-  with in situ data adapt to satellite data just as well and retrieve the haptophyte and
-  pelagophyte pigments better; the CNNs trained only with in situ data do not adapt.
+- Against the 196 HPLC samples of SOLA, BBMO and MOLA (station cubes, sampling day ±7 days):
+  chlorophyll a r = 0.78 (ln), fucoxanthin 0.76, chlorophyll c 0.74; the haptophyte and
+  pelagophyte pigments only 0.38–0.45, and zeaxanthin not at all. The highest values are missed.
+- The CNNs trained with satellite matchups, among them the one of the record, do best at the
+  stations. A window of ±7 days around the sample matters more than a larger area, which only adds
+  offshore water.
 
 **Task 2 — Plankton groups from pigments** ([details](task2/README.md); provisional)
 - The PETRIMED models run in Python with the same results as in R. Trained at SOLA, only 4 of the 18

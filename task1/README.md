@@ -64,76 +64,52 @@ also has the `predict-pigments` command of Task 1.
 
 ## 4. Check against HPLC
 
-The Task 2 samples (PETRIMED: SOLA, BBMO and MOLA, 196 in 2004–2021) have HPLC pigments. The check
-matches them with satellite Rrs in three ways, predicts their pigments with the 8 Task 1 models of
-the multi-sensor bands, and compares them with the HPLC ones with the metrics of Task 1 on
-ln(pigment):
+The Task 2 samples (PETRIMED: SOLA, BBMO and MOLA, 196 in 2004–2021) have HPLC pigments. Each is
+matched with its station cube of step 2: the 11 × 9 pixels around the station, from 7 days before
+to 7 days after the sampling day. The convolutional Task 1 models of the multi-sensor bands predict
+the pigments of every pixel and day with a satellite retrieval, and their median is compared with
+the HPLC pigments with the metrics of Task 1 on ln(pigment):
 
 ```bash
-python task1/scripts/hplc_matchups.py task1/configs/hplc_matchups.yaml
+python task1/scripts/hplc_check.py
 ```
 
-- `station_cubes`: the cubes of step 2 on the sampling day (Mediterranean 1 km product, 11 × 9
-  pixels, the median of the pixel predictions), the way the Task 4 record is made. 92 samples.
-- `glo_4km`: as the Task 1 satellite matchups were built: global 4 km product, 3 × 3 pixels, ±1
-  day, kept when more than 20% of the cube has data, averaged with weights that decrease from the
-  centre. 148 samples.
-- `med_1km`: the same 3 × 3 pixels and ±1 day on the Mediterranean 1 km product. Next to the coast
-  most of these pixels are land or flagged: 22 samples only.
-
-It writes `task1/data/hplc_matchups/scores.csv` and the two figures below. For the model and matchup
-of the record (`multi_sat_ft/concatenatedCNN` on the station cubes):
+It writes `task1/data/hplc_check.csv` and the figure below. For the model of the record
+(`multi_sat_ft/concatenatedCNN`), on all 196 samples:
 
 | Pigment | r (ln) | MAPE | Bias (MPE) |
 |---|---|---|---|
-| Chlorophyll a | 0.76 | 39% | −22% |
-| Chlorophyll c (HPLC: c2 only) | 0.74 | 48% | −32% |
-| Fucoxanthin | 0.72 | 70% | −53% |
-| Alloxanthin | 0.66 | 83% | −18% |
-| Diadinoxanthin | 0.60 | 59% | −16% |
-| Chlorophyll b | 0.58 | 92% | +21% |
-| 19'-hexanoyloxyfucoxanthin | 0.45 | 62% | −56% |
-| β-carotene | 0.45 | 54% | +13% |
-| 19'-butanoyloxyfucoxanthin | 0.44 | 65% | −57% |
-| Peridinin | 0.42 | 130% | +55% |
-| Zeaxanthin | −0.04 | 259% | +243% |
-
-Median r over the 11 pigments on the 85 samples that both main matchups have:
-
-| Model | Trained with | Station cubes | Global 4 km |
-|---|---|---|---|
-| `multi/dnn` | in situ data | 0.58 | 0.58 |
-| `multi/concatenatedDNN` | in situ data | 0.57 | 0.59 |
-| `multi_sat_ft/concatenatedCNN` | in situ, then satellite matchups | 0.57 | 0.44 |
-| `multi_sat_preft/cnn` | in situ and satellite matchups | 0.52 | 0.28 |
-| `multi/concatenatedCNN` | in situ data | 0.48 | −0.07 |
-| `multi/cnn` | in situ data | 0.45 | −0.18 |
-| `multi/bilstm` | in situ data | 0.42 | 0.41 |
-| `multi_sat_preft/concatenatedCNN` | in situ and satellite matchups | 0.42 | 0.42 |
+| Chlorophyll a | 0.78 | 37% | −25% |
+| Fucoxanthin | 0.76 | 75% | −51% |
+| Chlorophyll c (HPLC: c2 only) | 0.74 | 61% | −19% |
+| Alloxanthin | 0.71 | 75% | −29% |
+| Diadinoxanthin | 0.67 | 56% | −23% |
+| Chlorophyll b | 0.63 | 72% | +3% |
+| β-carotene | 0.52 | 46% | +5% |
+| Peridinin | 0.46 | 122% | +50% |
+| 19'-hexanoyloxyfucoxanthin | 0.45 | 66% | −60% |
+| 19'-butanoyloxyfucoxanthin | 0.38 | 66% | −59% |
+| Zeaxanthin | −0.05 | 401% | +389% |
 
 - The satellite pigments follow the HPLC ones for chlorophylls a and c, fucoxanthin, alloxanthin and
   diadinoxanthin, but miss the highest values (the SOLA samples of 2015–2016). The haptophyte and
-  pelagophyte pigments barely vary, and zeaxanthin not at all: it stays near 0.04 mg m⁻³, 3.4 times
-  the HPLC values on average. No model or matchup retrieves zeaxanthin (r ≤ 0.16).
-- The matchup is not what limits the record: the station cubes do as well as the matchups the model
-  was fine-tuned with, and better for that model (0.57 against 0.44 on the global 4 km product).
-  The peaks are missed on the sampling day too, so it is not the monthly averaging either. Part of
-  the gap is the scale: a point sample against kilometres of a coastal station.
-- The dense networks trained only with in situ data adapt to satellite data as well as the
-  fine-tuned CNN, and better for the haptophyte and pelagophyte pigments (on the station cubes,
-  `multi/dnn` reaches r = 0.60 for 19'-hexanoyloxy- and 0.66 for 19'-butanoyloxyfucoxanthin,
-  against 0.47 and 0.42), but come out lower for chlorophyll a (0.71 against 0.77). The CNNs
-  trained only with in situ data do not adapt: on the global product their values are several to
-  tens of times the HPLC ones.
+  pelagophyte pigments barely vary, and zeaxanthin not at all: it stays near 0.04 mg m⁻³, several
+  times the HPLC values.
+- The two CNNs trained with satellite matchups do best: median r over the 11 pigments 0.63 for the
+  fine-tuned one of the record and 0.64 for `multi_sat_preft/cnn`, against 0.53–0.55 for those
+  trained only with in situ data. The record's is better for chlorophylls a, b and c, fucoxanthin
+  and alloxanthin; `multi_sat_preft/cnn` for 19'-hexanoyloxyfucoxanthin (r = 0.64 against 0.45)
+  and peridinin.
+- This window was the best of those tried (the tests are not kept). The window matters more in
+  time than in space: the sampling day alone matches only 92 samples, and on the samples that all
+  the windows share it agrees less with HPLC (median r 0.64 against 0.69), as daily retrievals are
+  noisy. Larger areas, up to about 30 km, do not do better: they add offshore water, with less
+  chlorophyll than the stations. Nor do the 3 × 3 pixels and ±1 day of the global 4 km product
+  with which the model was fine-tuned (median r 0.40 against 0.63 on 149 shared samples): next to
+  the coast its pixels overestimate chlorophyll a by about 60%.
 
 <p align="center">
   <img src="report/hplc_check.png" width="80%" alt="Satellite against HPLC pigments at SOLA, BBMO and MOLA">
 </p>
 
-*`multi_sat_ft/concatenatedCNN` on the station cubes against HPLC, same day.*
-
-<p align="center">
-  <img src="report/hplc_matchups.png" width="70%" alt="Median r per Task 1 model and matchup">
-</p>
-
-*Median r over the 11 pigments per model and matchup, on the 85 shared samples.*
+*`multi_sat_ft/concatenatedCNN` on the station cubes (sampling day ±7 days) against HPLC.*

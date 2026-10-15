@@ -151,8 +151,8 @@ four periods (left) and monthly around BBMO (right).*
   most oligotrophic Mediterranean averages 0.06 mg m⁻³ (Martínez-Fornos et al., 2026): clear summer
   waters are overestimated and their trends damped.
 - *Composition at the coast.* Against the HPLC samples of the stations (Task 1), the satellite
-  chlorophyll a follows well (r = 0.76) but zeaxanthin does not (r = −0.04), the haptophyte and
-  pelagophyte pigments only weakly (r = 0.44–0.45), and the highest values are missed: the
+  chlorophyll a follows well (r = 0.78) but zeaxanthin does not (r = −0.05), the haptophyte and
+  pelagophyte pigments only weakly (r = 0.38–0.45), and the highest values are missed: the
   composition signal of 2.1 is weaker at the coast than the biomass signal.
 - *Few clear coastal pixels.* There are satellite data on 13% of the pixel-days around SOLA and 17%
   around BBMO, against 27% at VIDA and 50% at MOLA.
@@ -169,9 +169,6 @@ rise.*
 
 - Recompute the plankton part with the biodiversity indicator of Task 2, when PETRIMED provides it.
 - Test pigments and plankton groups in the Gulf of Trieste with the VIDA data of Task 3.
-- The Task 1 dense networks trained with in situ data retrieve the haptophyte and pelagophyte
-  pigments better at the stations than the fine-tuned CNN (Task 1): worth trying for the
-  composition axis.
 - Compute trends per sensor period, or from 2003, until the step of 2002–2003 is explained.
 
 ## References
