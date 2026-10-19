@@ -59,7 +59,7 @@ def save_quantiles(satellite: pd.DataFrame) -> None:
     """Quantiles of the satellite shares at the NW Mediterranean stations and of the HPLC shares at
     SOLA and MOLA (not BBMO, kept for the check)."""
     sat = psts.relative(from_task1(satellite.loc[["BBMO", "SOLA", "MOLA"]]).dropna())
-    insitu = psts.read_insitu("psbo").query("SF == 'PICO' and ST != 'BBMO'")
+    insitu = psts.read_insitu().query("ST != 'BBMO'")
     hplc = psts.relative(psts.estimate_prasinoxanthin(insitu[psts.PIGMENTS]))
     levels = np.linspace(0, 1, 101)
     table = {"quantile": levels}
@@ -77,8 +77,8 @@ def harmonize(shares: pd.DataFrame) -> pd.DataFrame:
 
 
 def check(satellite: pd.DataFrame) -> pd.DataFrame:
-    summary = pd.read_csv(psts.MODELS_DIR / "summary.csv").query("method == 'psbo' and fraction == 'pico'")
-    bbmo = psts.read_insitu("psbo").query("SF == 'PICO' and ST == 'BBMO'")
+    summary = pd.read_csv(psts.MODELS_DIR / "summary.csv")
+    bbmo = psts.read_insitu().query("ST == 'BBMO'")
     months = bbmo["Date"].dt.to_period("M").dt.to_timestamp()
     pigments = from_task1(satellite.reindex(pd.MultiIndex.from_arrays([bbmo["ST"], months]))
                           .set_axis(bbmo.index)).dropna()
@@ -86,7 +86,7 @@ def check(satellite: pd.DataFrame) -> pd.DataFrame:
     month = bbmo["Date"].dt.month
     rows, series = [], {}
     for pst in summary["pst"]:
-        models = psts.load_models("psbo", "pico", pst)
+        models = psts.load_models(pst)
         observed = bbmo[pst]
         result = {"pst": pst}
         predicted = {}
@@ -116,7 +116,7 @@ def predict(pigments: pd.DataFrame, models: dict) -> pd.DataFrame:
     x = harmonize(psts.relative(from_task1(pigments[ok])))
     out = pd.DataFrame(index=pigments.index, columns=list(models), dtype="float32")
     for pst, pst_models in models.items():
-        out.loc[ok, pst] = psts.predict(pst_models, x)
+        out.loc[ok, pst] = psts.predict(pst_models, x).astype("float32")
     return out
 
 
@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.check_only:
         return 0
 
-    models = {pst: psts.load_models("psbo", "pico", pst) for pst in PSTS}
+    models = {pst: psts.load_models(pst) for pst in PSTS}
     for path in sorted(PIGMENT_DIR.glob("*_monthly.nc")):
         with xr.open_dataset(path) as monthly:
             # One year at a time keeps the memory low

@@ -3,15 +3,13 @@
     python task2/scripts/psts.py
 
 PETRIMED (task2/PETRIMED) trained XGBoost models at SOLA, in 2015-2016, that predict the abundance
-of plankton sequence types (PSTs) in the pico (0.2-3 um) and nano (3-20 um) fractions from the
-relative composition of 12 HPLC pigments. There is one set of models for each way of measuring
-the PSTs: psbO gene (psbo), metagenome-assembled genomes (mags) and metabarcoding (metab).
-export_models.R exports the models with a validation correlation of at least 0.6, which PETRIMED
-averages, to task2/data/models.
+of plankton sequence types (PSTs) from the relative composition of 12 HPLC pigments. Here the pico
+(0.2-3 um) psbO models are used, those with a validation correlation of at least 0.6, which
+PETRIMED averages, exported by export_models.R to task2/data/models.
 
-The pico psbo models are tested on the HPLC pigments of BBMO (100 samples, 2004-2014) and MOLA (7,
-2020-2021), where they were not trained, with the Pearson correlation between predicted and
-observed abundance, from
+They are tested on the HPLC pigments of BBMO (100 samples, 2004-2014) and MOLA (7, 2020-2021),
+where they were not trained, with the Pearson correlation between predicted and observed
+abundance, from
 - the HPLC pigments (hplc), also at SOLA (mostly training samples);
 - the HPLC pigments with prasinoxanthin, which Task 1 does not estimate, replaced by
   PRASINO_PER_CHLB x chlorophyll b (no_prasino).
@@ -40,11 +38,10 @@ PIGMENTS = ["Chl_C2", "Peridinine", "X19BF", "Fucoxanthin", "Prasinoxanthin", "X
 PRASINO_PER_CHLB = 0.30
 
 
-def read_insitu(method: str) -> pd.DataFrame:
-    """PETRIMED's table of HPLC pigments and observed PSTs at SOLA, BBMO and MOLA."""
-    data = pd.read_csv(DATA_DIR / f"mola_bbmo_sola_pigments_{method}_pst_rpkm.csv", parse_dates=["Date"])
-    data = data.rename(columns={"19BF": "X19BF", "19HF": "X19HF"})
-    return data.replace({"SF": {"0.2-3 um": "PICO", "3-20 um": "NANO"}})
+def read_insitu() -> pd.DataFrame:
+    """PETRIMED's table of HPLC pigments and observed pico psbO PSTs at SOLA, BBMO and MOLA."""
+    data = pd.read_csv(DATA_DIR / "mola_bbmo_sola_pigments_psbo_pst_rpkm.csv", parse_dates=["Date"])
+    return data[data["SF"] == "PICO"].rename(columns={"19BF": "X19BF", "19HF": "X19HF"})
 
 
 def estimate_prasinoxanthin(pigments: pd.DataFrame) -> pd.DataFrame:
@@ -58,9 +55,9 @@ def relative(pigments: pd.DataFrame) -> pd.DataFrame:
     return x.div(x.sum(axis=1), axis=0)
 
 
-def load_models(method: str, fraction: str, pst: str) -> list[xgb.Booster]:
+def load_models(pst: str) -> list[xgb.Booster]:
     models = []
-    for line in (MODELS_DIR / f"{method}_{fraction}" / f"{pst}.jsonl").read_text().splitlines():
+    for line in (MODELS_DIR / f"{pst}.jsonl").read_text().splitlines():
         # xgboost 3 writes base_score as a list, which xgboost 2.1 does not read
         line = re.sub(r'"base_score":"\[([^\]]+)\]"', r'"base_score":"\1"', line)
         model = xgb.Booster()
@@ -117,8 +114,8 @@ def plot_check(dates: pd.Series, series: dict, title: str, path: Path) -> None:
 
 
 def main() -> int:
-    summary = pd.read_csv(MODELS_DIR / "summary.csv").query("method == 'psbo' and fraction == 'pico'")
-    pico = read_insitu("psbo").query("SF == 'PICO'")
+    summary = pd.read_csv(MODELS_DIR / "summary.csv")
+    pico = read_insitu()
     # Pigments made relative within each station, as PETRIMED
     inputs = {
         "hplc": pico.groupby("ST", group_keys=False)[PIGMENTS].apply(relative),
@@ -127,7 +124,7 @@ def main() -> int:
     }
     rows, check = [], {}
     for row in summary.itertuples():
-        models = load_models("psbo", "pico", row.pst)
+        models = load_models(row.pst)
         result = {"pst": row.pst, "models": row.models, "cor_valid": row.cor_valid}
         for name, x in inputs.items():
             predicted = pd.Series(predict(models, x), index=x.index)
