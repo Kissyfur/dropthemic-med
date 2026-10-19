@@ -10,8 +10,7 @@ quantile, so no transform is applied here. Writes to task1/data/pigments:
   two days can be unrealistic: filter on `valid_days`.
 - stations_daily.nc from the station cubes, task1/data/station_matchups/datasets/optics.nc: the
   pigments of the 11 x 9 pixels around each station on each day, as (station, time, lat_pixel,
-  lon_pixel). Only the cube's centre day is used, and only its pixels with a retrieval
-  (cloud_mask 0): the gaps that the cubes fill by interpolation stay empty.
+  lon_pixel), from the cube's centre day. Pixels without a retrieval that day stay empty.
 """
 from __future__ import annotations
 
@@ -47,9 +46,7 @@ PIGMENT_NAMES = {
 def predict(predictor: Predictor, log_rrs: xr.Dataset) -> xr.Dataset:
     """Pigments [mg m-3] of a Dataset with one ln(Rrs) variable per Copernicus band."""
     bands = log_rrs.rename({name: band for name, band in PRODUCT_BANDS.items() if name in log_rrs})
-    bands = bands[predictor.bands]
-    # ln(Rrs) is negative: a 0 is a gap filled by the cubes, not a measurement
-    pigments = predictor.predict(bands.where(bands < 0), logged=True)
+    pigments = predictor.predict(bands[predictor.bands], logged=True)
     for name in pigments.data_vars:
         pigments[name] = pigments[name].astype("float32")
         pigments[name].attrs = {"long_name": PIGMENT_NAMES.get(name, name), "units": "mg m-3"}
@@ -82,8 +79,7 @@ def predict_stations(predictor: Predictor, cubes_path: Path, stations: dict, out
     with xr.open_dataarray(cubes_path) as cubes:
         # The cube's 15 days are centred on the day of its Id, <station>_<yyyymmdd>
         day = cubes.isel(time=cubes.sizes["time"] // 2, drop=True).reset_coords(drop=True).load()
-    observed = day.sel(variable="cloud_mask", drop=True) == 0
-    pigments = predict(predictor, day.where(observed).to_dataset("variable"))
+    pigments = predict(predictor, day.to_dataset("variable"))
 
     ids = pd.Series(pigments["Id"].values).str.split("_", expand=True)
     pigments = (

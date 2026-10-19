@@ -1,7 +1,7 @@
-# Daily radiometry cubes at the sampling stations, for every day from the start of the record
-# to today. They are built like the training matchups of retrieval-from-space (same window,
-# interpolation, cloud mask and transforms), but the rows have no target: they are for
-# station time series and for predicting with a trained model.
+# Daily radiometry cubes at the sampling stations, for every day of the record: the 11 x 9
+# pixels (about 1 km) around each station, from 7 days before to 7 days after the day. Pixels
+# without a satellite retrieval stay empty. The rows have no target: the cubes are for station
+# time series and for predicting with the Task 1 model.
 #
 #   python task1/scripts/station_matchups.py task1/configs/station_matchups.yaml
 #
@@ -30,33 +30,25 @@ products:
   - name: reflectance
     dataset_ids: [cmems_obs-oc_med_bgc-reflectance_my_l3-multi-1km_P1D]
     feature_group: optics
-    variables: [RRS412, RRS443, RRS490, RRS510, RRS555, RRS670]
+    variables: [RRS412, RRS443, RRS490, RRS555, RRS670]   # the bands of the Task 1 model
     preprocess:
-      interpolate_dims: [lat, lon, time]
+      # Each band floored at the 5% quantile of its positive values in the cube, then ln. Per
+      # cube, so that a cube does not depend on the other dates processed with it.
       positive_quantile: 0.05
-      # Per cube: each sample is floored by its own window, so a cube does not depend on
-      # which other dates are processed with it, and matches how training cubes were made.
       positive_quantile_dims: [time, lat, lon]
       log: true
       add_cloud_land_masks: true
       mask_kinds: [cloud_mask]
-      min_valid_ratio: 0.001     # drops only windows without a single retrieval
+      min_valid_ratio: 0.001     # drops only the cubes without a single retrieval
+      fillna: null               # gaps stay empty
 
 matchup:
   lat_window: 0.06
   lon_window: 0.06
-  time_window_days: 14
+  time_window_days: 7
   lat_threshold: 0.1
   lon_threshold: 0.1
   time_threshold_days: 1
-  # Days within two weeks of either end of the record get a shorter window; drop them
-  # rather than mix cubes of different lengths.
+  # Days within a week of either end of the record get a shorter window: drop them rather
+  # than mix cubes of different lengths.
   require_full_time_window: true
-
-preprocess:
-  positive_quantile: null
-  log_products: false
-  add_cloud_land_masks: false
-  fillna: 0.0
-  time_limit: 15
-  time_selection: centered
