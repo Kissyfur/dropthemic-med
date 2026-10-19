@@ -11,7 +11,10 @@ existing data:
 2. pigments → plankton groups from meta-omics (metagenomes and metabarcoding).
 
 New DNA and pigment data from the Gulf of Trieste test the second step. Both models are then
-applied to more than 25 years of satellite records of the Mediterranean.
+applied to more than 25 years of satellite records of the NW Mediterranean, the Balearic Islands and
+the Gulf of Trieste. This repository applies the published models as they are, without training
+them: those of [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment-retrieval-from-olci)
+(Task 1) and [PETRIMED](https://github.com/pjmramond/PETRIMED) (Task 2).
 
 | Task | Content | Status | Folder |
 |---|---|---|---|
@@ -65,21 +68,24 @@ python task4/scripts/figures.py
 ## Main results
 
 **Task 1 — Pigments from radiometry** ([details](task1/README.md))
-- The 13 pigments for every day and month of the 1 km multi-sensor record, 1997–2026, in the NW
-  Mediterranean and the north Adriatic.
-- Against the 196 HPLC samples of SOLA, BBMO and MOLA (station cubes, sampling day ±7 days):
-  chlorophyll a r = 0.78 (ln), fucoxanthin 0.76, chlorophyll c 0.74; the haptophyte and
-  pelagophyte pigments only 0.38–0.45, and zeaxanthin not at all. The highest values are missed.
-- The CNNs trained with satellite matchups, among them the one of the record, do best at the
+- The 13 pigments for every month of the 1 km multi-sensor record, 1997–2026, over the NW
+  Mediterranean and the Balearic Islands, and for every day around four stations: BBMO, SOLA and
+  MOLA on the Catalan and French coast, and VIDA in the Gulf of Trieste.
+- Against the 196 HPLC samples of SOLA, BBMO and MOLA (station cubes, sampling day ±7 days), the
+  satellite pigments rise and fall with the HPLC ones (r = 0.78 for chlorophyll a and 0.76 for
+  fucoxanthin, on ln values) but are biased, so R², the metric of the paper, is at most 0.33:
+  fucoxanthin and the haptophyte and pelagophyte pigments come out at half the HPLC values or less,
+  and zeaxanthin about five times higher, without following the HPLC one. Bloom peaks are missed.
+- The CNN of the record, fine-tuned with satellite matchups, is the best of the Task 1 CNNs at the
   stations. A window of ±7 days around the sample matters more than a larger area, which only adds
   offshore water.
 
 **Task 2 — Plankton groups from pigments** ([details](task2/README.md); provisional)
-- The PETRIMED models run in Python with the same results as in R. Trained at SOLA, only 4 of the 18
-  psbO plankton groups keep r ≥ 0.5 at BBMO: Micromonas, Synechococcus, Pelagophyceae and
-  Bathycoccus.
+- The PETRIMED models (Ramond et al., 2026) run in Python with the same results as in R. Trained
+  at SOLA, only 4 of the 18 psbO plankton groups keep r ≥ 0.5 at BBMO: Micromonas, Synechococcus,
+  Pelagophyceae and Bathycoccus.
 - From the satellite pigments none holds until their composition is harmonized with the HPLC one;
-  then Synechococcus does (r = 0.61 monthly, 0.88 for the seasonal cycle), mostly as a
+  then Synechococcus does (r = 0.62 monthly, 0.89 for the seasonal cycle), mostly as a
   low-chlorophyll signal.
 - The biodiversity indicator of PETRIMED is still to come; this task will be rewritten with it.
 
@@ -88,10 +94,14 @@ python task4/scripts/figures.py
   pelagophyte pigments against zeaxanthin): indicators built from them will largely re-express
   these two.
 - They show the expected patterns: diatom pigments on the coast and haptophyte, pelagophyte and
-  cyanobacterial ones offshore, the late-winter bloom of the Catalan coast, and the years of the
-  north Adriatic set by the Po.
+  cyanobacterial ones offshore, the late-winter bloom of the Catalan coast, a winter maximum two
+  months earlier around the Balearic Islands, and the years of VIDA set by the rivers.
 - From 2003 to 2025 the NW Mediterranean loses chlorophyll a (−8% per decade) and fucoxanthin
   (−18%) while zeaxanthin rises (+5%), as satellite functional types do (Martínez-Fornos et al.,
-  2026); the north Adriatic has no trend.
+  2026). The Balearic Islands change the same way, more weakly (−5%, −12%, +2%), the coastal
+  stations BBMO and SOLA most strongly (chlorophyll a −17 to −19%), and VIDA has no trend.
+- Around the Balearic Islands the shelf has 20% less chlorophyll a than the deep basin in winter,
+  and the same in summer: it lacks part of the winter increase.
 - Limits: a step in the record in 2002–2003 (change of sensors), a floor of the model near
-  0.1 mg m⁻³ of chlorophyll a, and a weak composition signal at the coast.
+  0.1 mg m⁻³ of chlorophyll a that the Balearic summer reaches, and a weak composition signal at
+  the coast.

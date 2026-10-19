@@ -3,13 +3,19 @@
 > **Provisional.** PETRIMED predicts the abundance of plankton groups and taxa; the biodiversity
 > indicator built from them is still to come, and this task will be rewritten with it.
 
-The models come from [PETRIMED](https://github.com/pjmramond/PETRIMED), the code of Ramond et al. (in
-preparation), *Inferring plankton biodiversity combining meta-omics and pigment data: a bridge
-towards satellite monitoring*. They are XGBoost models trained at SOLA in 2015–2016 that predict
-the abundance of plankton sequence types (PSTs) in the pico (0.2–3 µm) and nano (3–20 µm)
-fractions from the relative composition of 12 HPLC pigments, with the PSTs measured three ways:
-psbO gene, metagenome-assembled genomes and metabarcoding. Here the pico psbO models are used,
-those that transfer best.
+The models come from PETRIMED:
+- Code and trained models: [PETRIMED](https://github.com/pjmramond/PETRIMED), cloned into
+  `task2/PETRIMED`.
+- Paper: Ramond, P., Vidussi, F., Sánchez-López, B., Talone, M., Marchese, C., Organelli, E., Logares, R.,
+  Bouget, F.-Y. and Galand, P. (2026). Inferring plankton biodiversity combining meta-omics and
+  pigment data: a bridge towards satellite monitoring. SSRN preprint.
+  https://doi.org/10.2139/ssrn.7624673
+
+They are XGBoost models trained at SOLA in 2015–2016 that predict the abundance of plankton
+sequence types (PSTs) in the pico (0.2–3 µm) and nano (3–20 µm) fractions from the relative
+composition of 12 HPLC pigments, with the PSTs measured three ways: psbO gene, metagenome-assembled
+genomes and metabarcoding. The paper finds that the models transfer poorly across ecosystems; the
+tests below show it at BBMO and MOLA. Here the pico psbO models are used, those that transfer best.
 
 Run everything from the repository root. `task2/PETRIMED`, `task2/data/` and `task2/figures/` are
 not kept in git.
@@ -23,9 +29,10 @@ python task2/scripts/psts.py
 ```
 
 - `task2/PETRIMED` is a local copy: changes to it stay local.
-- `export_models.R` exports to `task2/data/models` the models that PETRIMED averages, those with a
-  validation correlation of at least 0.6, as xgboost JSON for Python. It needs R with the xgboost
-  package (`install.packages("xgboost")`): the models were saved with xgboost 2 or later.
+- `export_models.R` exports to `task2/data/models` the pico psbO models that PETRIMED averages,
+  those with a validation correlation of at least 0.6, as xgboost JSON for Python. It needs R with
+  the xgboost package (`install.packages("xgboost")`): the models were saved with xgboost 2 or
+  later.
 - `psts.py` predicts as PETRIMED does (pigments relative to their total, mean of the models), with
   the same results as in R, and tests the models on the HPLC pigments of BBMO (100 samples,
   2004–2014) and MOLA (7, 2020–2021), where they were not trained. It writes
@@ -69,10 +76,10 @@ from the satellite pigments of the month of each sample:
 
 | PST (pico, psbO) | From HPLC pigments | From satellite pigments | Harmonized | Harmonized, seasonal cycle |
 |---|---|---|---|---|
-| Micromonas | 0.55 | −0.24 | −0.10 | 0.05 |
-| Synechococcus | 0.54 | 0.02 | **0.61** | **0.88** |
-| Pelagophyceae | 0.52 | −0.21 | −0.15 | −0.28 |
-| Bathycoccus | 0.51 | 0.18 | 0.22 | **0.54** |
+| Micromonas | 0.55 | −0.24 | −0.09 | 0.10 |
+| Synechococcus | 0.54 | 0.02 | **0.62** | **0.89** |
+| Pelagophyceae | 0.52 | −0.22 | −0.14 | −0.27 |
+| Bathycoccus | 0.51 | 0.18 | 0.26 | **0.54** |
 
 - From the satellite pigments as they are, no PST holds and the seasonal cycles come out inverted.
   Harmonized, Synechococcus holds, and so does the seasonal cycle of Bathycoccus; no other PST
@@ -81,11 +88,12 @@ from the satellite pigments of the month of each sample:
 - The satellite zeaxanthin barely varies (Task 1, step 4), so its share is almost the inverse of
   chlorophyll a: the Synechococcus indicator is mostly a low-chlorophyll signal, which the observed
   Synechococcus also follows at BBMO.
-- Both the models and the harmonization come from the NW Mediterranean. As planned in the proposal
-  (Risk 3), the plankton groups are analysed there; the VIDA data of Task 3 will tell whether they
-  hold in the Gulf of Trieste.
+- Both the models and the harmonization come from the Catalan and French coast. They are applied
+  there and around the Balearic Islands, in the same western basin but without in situ data to check
+  them (the proposal's Risk 3 keeps the plankton analysis to this part of the Mediterranean); the
+  VIDA data of Task 3 will tell whether they hold in the Gulf of Trieste.
 
-The script then predicts these two PSTs and writes to `task2/data/psts/`, in about 10 minutes:
+The script then predicts these two PSTs and writes to `task2/data/psts/`, in about 15 minutes:
 - `satellite_check.csv`, `pigment_quantiles.csv` and `task2/figures/satellite_check.png`: the check
   (`--check-only` stops there);
 - `<region>_monthly.nc`: their abundance (psbO RPKM) on the grid of the monthly pigments, with their
