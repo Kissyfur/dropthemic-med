@@ -10,7 +10,6 @@ task1/figures/
 task2/data/
 task2/figures/
 task4/figures/
-predictions/
 
 # Task 2: the local PETRIMED clone
 task2/PETRIMED/
