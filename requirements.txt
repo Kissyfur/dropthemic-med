@@ -14,6 +14,7 @@ pandas~=2.1.4
 xarray~=2023.11.0
 tensorflow<2.11
 
-# Task 2 models (PETRIMED, exported to xgboost JSON) and Task 4 figures
+# Task 2 models (PETRIMED, exported to xgboost JSON), Task 3 data (Excel) and the figures
 xgboost
+openpyxl
 matplotlib
