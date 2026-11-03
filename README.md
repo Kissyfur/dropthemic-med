@@ -10,7 +10,7 @@ existing data:
 1. remote sensing reflectance (Rrs) → photosynthetic pigments;
 2. pigments → plankton groups from meta-omics (metagenomes and metabarcoding).
 
-New DNA and pigment data from the Gulf of Trieste test the second step. Both models are then
+New metabarcoding data from the Gulf of Trieste describe its plankton groups. Both models are then
 applied to more than 25 years of satellite records of the NW Mediterranean, the Balearic Islands and
 the Gulf of Trieste. This repository applies the published models as they are, without training
 them: those of [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment-retrieval-from-olci)
@@ -20,8 +20,17 @@ them: those of [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment
 |---|---|---|---|
 | 1 | Pigment concentrations from radiometry | Model and paper; applied to the satellite record and checked against HPLC | [task1](task1/README.md) |
 | 2 | Plankton groups from pigments | PETRIMED models, tested away from SOLA and on satellite pigments; the biodiversity indicator is to come | [task2](task2/README.md) |
-| 3 | New metabarcoding and pigment time series at VIDA (monthly, 2021–2024) | To come | |
+| 3 | Plankton groups at VIDA from metabarcoding (about monthly, 2021–2023) | Data and description | [task3](task3/README.md) |
 | 4 | Satellite radiometry → pigments → diversity, 1997 to today | Analysis and technical note (draft) | [task4](task4/README.md) |
+
+## Files
+
+| Task | Description | Scripts | Configs and data | Figures |
+|---|---|---|---|---|
+| 1 | [task1/README.md](task1/README.md) | [download_monthly_means.py](task1/scripts/download_monthly_means.py), [station_matchups.py](task1/scripts/station_matchups.py), [predict_pigments.py](task1/scripts/predict_pigments.py), [hplc_check.py](task1/scripts/hplc_check.py) | [med_radiometry_monthly.yaml](task1/configs/med_radiometry_monthly.yaml), [station_matchups.yaml](task1/configs/station_matchups.yaml) | [task1/report](task1/report/) |
+| 2 | [task2/README.md](task2/README.md) | [export_models.R](task2/scripts/export_models.R), [psts.py](task2/scripts/psts.py), [predict_psts.py](task2/scripts/predict_psts.py) | [PETRIMED](https://github.com/pjmramond/PETRIMED) (cloned into `task2/PETRIMED`) | [task2/report](task2/report/) |
+| 3 | [task3/README.md](task3/README.md) | [describe_vida.py](task3/scripts/describe_vida.py) | [VIDA_PST.xlsx](task3/VIDA_PST.xlsx) | [task3/report](task3/report/) |
+| 4 | [task4/README.md](task4/README.md) (technical note) | [figures.py](task4/scripts/figures.py) | the outputs of Tasks 1 and 2 | [task4/report](task4/report/) |
 
 ## Installation
 
@@ -45,8 +54,9 @@ Task 2 also needs R with the xgboost package, once, to export the PETRIMED model
 
 ## Running
 
-From the repository root, in this order. The README of each task describes its steps and outputs;
-data and figures are written inside each task folder and are not kept in git.
+From the repository root, in this order. The README of each task describes its steps and outputs.
+The data and figures they generate stay inside each task folder and are not kept in git; the
+`report/` folders keep the figures shown in the READMEs.
 
 ```bash
 # Task 1: satellite radiometry and pigments
@@ -63,6 +73,9 @@ python task2/scripts/predict_psts.py
 # Task 1 check against the HPLC samples of Task 2, and Task 4 figures
 python task1/scripts/hplc_check.py
 python task4/scripts/figures.py
+
+# Task 3: description of the VIDA data (independent of the others)
+python task3/scripts/describe_vida.py
 ```
 
 ## Main results
@@ -88,6 +101,15 @@ python task4/scripts/figures.py
   then Synechococcus does (r = 0.62 monthly, 0.89 for the seasonal cycle), mostly as a
   low-chlorophyll signal.
 - The biodiversity indicator of PETRIMED is still to come; this task will be rewritten with it.
+
+**Task 3 — Plankton groups at VIDA** ([details](task3/README.md))
+- 23 metabarcoding samples at the Vida buoy, January 2021 to December 2023, with the relative
+  abundance of 21 eukaryote and 5 prokaryote groups, named as in PETRIMED.
+- Synechococcus is 15% of the prokaryotes on average, lowest in December (1–4%) and highest in
+  July and October–November (up to 50%). Diatoms are the main photosynthetic eukaryotes (5% of the
+  eukaryotes on average, up to 14%), without a regular season.
+- The satellite predictions of Task 4 put the maximum of Synechococcus at VIDA in May, when its
+  observed share is lower than in March, July and autumn: the Task 2 models do not hold there.
 
 **Task 4 — 25 years of satellite records** ([technical note](task4/README.md))
 - The satellite pigments carry two signals, biomass and one axis of composition (haptophyte and

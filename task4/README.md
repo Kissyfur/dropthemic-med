@@ -97,8 +97,8 @@ nutrients up; in situ data would have to confirm it.
 At VIDA the haptophyte, dinoflagellate and diadinoxanthin pigments peak in May, like the spring
 bloom of the Gulf of Trieste (Cerino et al., 2019), but chlorophyll a and fucoxanthin peak in
 November, when the in situ counts rise only slightly. That autumn maximum may be river water
-(sediment, coloured dissolved matter) read as pigment by the 5-band model: the VIDA data of Task 3
-can test it.
+(sediment, coloured dissolved matter) read as pigment by the 5-band model; in situ measurements at
+VIDA would tell.
 
 <p>
   <img src="report/BBMO_monthly.png" width="49%" alt="Monthly pigments around BBMO, 1997-2026">
@@ -156,7 +156,8 @@ change over the regions (+1% per decade in the NW Mediterranean, 0% around the B
 and Bathycoccus falls 3–4% per decade (significant in the NW Mediterranean only), while at BBMO
 Synechococcus falls 16% per decade. At VIDA, Synechococcus peaks in May and goes against the
 zeaxanthin share (r = −0.66), a sign that the models, made in the NW Mediterranean, do not hold
-there: the VIDA data of Task 3 will test it.
+there. The VIDA metabarcoding of [Task 3](../task3/README.md) agrees: the observed share of
+Synechococcus is lower in May than in March, July and autumn.
 
 <p>
   <img src="report/psts_nw_mediterranean_periods.png" width="49%"
@@ -200,7 +201,7 @@ rise.*
 ## 4. Next steps
 
 - Recompute the plankton part with the biodiversity indicator of Task 2, when PETRIMED provides it.
-- Test pigments and plankton groups in the Gulf of Trieste with the VIDA data of Task 3.
+- Compare in detail the plankton groups predicted at VIDA with those observed in Task 3.
 - Check the Balearic pigments, and the winter contrast between the shelf and the deep basin, with
   in situ data.
 - Compute trends per sensor period, or from 2003, until the step of 2002–2003 is explained.
