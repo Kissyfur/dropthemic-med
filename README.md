@@ -87,14 +87,17 @@ python task3/scripts/validate_chain.py
   MOLA on the Catalan and French coast, and VIDA in the Gulf of Trieste.
 - Against the 196 HPLC samples of SOLA, BBMO and MOLA (5 × 5 pixels around the station, sampling
   day ±7 days), the satellite pigments rise and fall with the HPLC ones (r = 0.77 for chlorophyll a
-  and fucoxanthin, on ln values) but are biased, so R², the metric of the paper, is at most 0.39:
-  fucoxanthin and the haptophyte and pelagophyte pigments come out at half the HPLC values or less,
-  and zeaxanthin about five times higher, without following the HPLC one.
+  and fucoxanthin, on ln values) but are biased, so R², the metric of the paper, is at most 0.36:
+  fucoxanthin and the haptophyte and pelagophyte pigments come out at about a third of the HPLC
+  values, and zeaxanthin about 1.8 times higher, without following the HPLC one.
+- Values below the detection limit of the satellite pigments (the lowest 5% of the satellite record
+  at the stations, far above that of HPLC) are set to it, HPLC and satellite alike. This removes
+  meaningless percentage errors (zeaxanthin bias +379% → +70%) and changes R² little.
 - The underestimation is coastal and grows with concentration (13–21% of HPLC for those pigments in
   the SOLA blooms, nearly unbiased offshore at MOLA). It damps trends and seasonal amplitudes
   without changing their sign or timing, and it distorts the composition that Task 2 uses.
 - Calibrated per station with HPLC (one factor per pigment and station), the median R² rises from
-  0.12 to 0.58 (0.54 with factors from other years). The factors depend on the water type
+  0.07 to 0.57 (0.54 with factors from other years). The factors depend on the water type
   (fucoxanthin × 4.7 at SOLA, × 0.94 offshore at MOLA), so they are not applied to the regional maps.
 - The CNN of the record, fine-tuned with satellite matchups, is the best of the Task 1 CNNs at the
   stations. Small windows (5 km) and ±7 days around the sample work best: larger areas add offshore
@@ -108,6 +111,9 @@ python task3/scripts/validate_chain.py
   times one factor, the ratio of its median HPLC share to its median satellite share (fucoxanthin
   × 4.3, zeaxanthin × 0.19). Then Synechococcus holds (r = 0.56 monthly, 0.87 for the seasonal
   cycle), mostly as a low-chlorophyll signal.
+- The correlations of the plankton groups need no detection limit: the models never predict near
+  the smallest abundance detected (one read), and setting values below it to it changes r by less
+  than 0.001.
 - The biodiversity indicator of PETRIMED is still to come; this task will be rewritten with it.
 
 **Task 3 — Plankton groups at VIDA** ([details](task3/README.md))

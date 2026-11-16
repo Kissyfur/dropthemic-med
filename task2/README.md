@@ -55,6 +55,12 @@ Correlation between predicted and observed abundance, for the psbO PSTs best pre
 - The models follow the timing of these PSTs at BBMO but miss the size of their peaks.
 - Prasinoxanthin, which Task 1 does not estimate, can be replaced by 0.30 × chlorophyll b, their
   ratio at SOLA: r changes by 0.06 at most.
+- Unlike the pigments of Task 1, these scores need no detection limit. Pelagophyceae and Bathycoccus
+  are not detected (zero reads) in 15 and 30 of the 100 BBMO samples, and the smallest abundance
+  detected, one read, is 90–2700 RPKM depending on the PST; but the models never predict below
+  1000 RPKM, and r is computed on the abundances, as in PETRIMED, not on their logarithm. Setting
+  the observed and predicted values below that limit to it changes r by less than 0.001 (and by
+  0.03 at most with a limit at the lowest 5% of the satellite predictions), so it is not applied.
 
 <p align="center">
   <img src="report/insitu_check.png" width="80%"

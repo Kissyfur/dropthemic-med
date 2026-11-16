@@ -11,6 +11,11 @@ Pearson r of ln(pigment), and MAPE and MPE (bias) of the concentrations, as in t
 Writes task1/data/hplc_check.csv and, for the model of the record, task1/figures/hplc_check.png
 (each pigment, all samples) and task1/figures/hplc_series_<station>.png (each pigment over time).
 
+Values below the detection limit of the satellite pigments, HPLC and satellite alike, are set to it
+before scoring: the limit of each pigment is the 5% quantile of the satellite pigments of the whole
+station record (stations_daily.nc of predict_pigments.py), the lowest values the satellite gives
+(task1/data/detection_limits.csv). It is far above the detection limit of HPLC.
+
 The bias of the model depends on the station, so the model of the record is also calibrated per
 station: each pigment times the median HPLC/satellite ratio of all the samples of the station
 (task1/data/station_factors.csv). The calibrated pigments are scored (on the samples the factors
@@ -31,6 +36,8 @@ from pigment_retrieval.predict.predict import Predictor, available_models  # noq
 
 DATA_DIR = Path("task2/PETRIMED/DATA")
 STATION_CUBES = Path("task1/data/station_matchups/datasets/optics.nc")
+STATION_PIGMENTS = Path("task1/data/pigments/stations_daily.nc")
+LIMITS = Path("task1/data/detection_limits.csv")
 OUTPUT = Path("task1/data/hplc_check.csv")
 FACTORS = Path("task1/data/station_factors.csv")
 FIGURES = Path("task1/figures")
@@ -65,6 +72,13 @@ def satellite_inputs(ids: pd.Index) -> xr.Dataset:
         return cube.load().to_dataset("variable").rename(BANDS)
 
 
+def detection_limits() -> pd.Series:
+    """Per pigment, the 5% quantile of the satellite pigments of the whole station record: the
+    lowest values the satellite gives, as the floor Task 1 applies to its Rrs and training pigments."""
+    with xr.open_dataset(STATION_PIGMENTS) as pigments:
+        return pd.Series({p: float(pigments[p].quantile(0.05)) for p in PAIRS}, name="limit")
+
+
 def scores(hplc: pd.DataFrame, predicted: pd.DataFrame) -> pd.DataFrame:
     """Per pigment: R^2 (coefficient of determination) and Pearson r of ln(pigment), MAPE and MPE
     (bias) of the concentrations in %, and the number of samples."""
@@ -78,8 +92,10 @@ def scores(hplc: pd.DataFrame, predicted: pd.DataFrame) -> pd.DataFrame:
     return table[["n", "R2", "r", "MAPE", "MPE"]]
 
 
-def plot_scatter(hplc: pd.DataFrame, predicted: pd.DataFrame, stations: pd.Series, title: str, path: Path) -> None:
-    """Predicted against HPLC pigments, one panel per pigment, coloured by station."""
+def plot_scatter(hplc: pd.DataFrame, predicted: pd.DataFrame, stations: pd.Series, limits: pd.Series, title: str,
+                 path: Path) -> None:
+    """Predicted against HPLC pigments, one panel per pigment, coloured by station, with the detection
+    limit (dotted)."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -91,9 +107,11 @@ def plot_scatter(hplc: pd.DataFrame, predicted: pd.DataFrame, stations: pd.Serie
             at = stations == station
             ax.plot(x[at], y[at], "o", ms=4, color=color, alpha=0.8, mec="white", mew=0.4, label=station)
         both = pd.concat([x, y]).dropna()
-        limits = [both.min() / 1.5, both.max() * 1.5]
-        ax.plot(limits, limits, color="#8a8a86", lw=0.8)
-        ax.set(xscale="log", yscale="log", xlim=limits, ylim=limits)
+        extent = [both.min() / 1.5, both.max() * 1.5]
+        ax.plot(extent, extent, color="#8a8a86", lw=0.8)
+        ax.axvline(limits[pigment], color="#8a8a86", lw=0.8, ls=":")
+        ax.axhline(limits[pigment], color="#8a8a86", lw=0.8, ls=":")
+        ax.set(xscale="log", yscale="log", xlim=extent, ylim=extent)
         ax.set_title(NAMES[pigment], fontsize=9)
         ax.tick_params(labelsize=7)
         ax.spines[["top", "right"]].set_visible(False)
@@ -125,8 +143,9 @@ def label_log_axis(ax) -> None:
 
 
 def plot_series(hplc: pd.DataFrame, predicted: pd.DataFrame, calibrated: pd.DataFrame, dates: pd.Series,
-                title: str, path: Path) -> None:
-    """HPLC, satellite and calibrated satellite pigments of one station over time, one panel per pigment."""
+                limits: pd.Series, title: str, path: Path) -> None:
+    """HPLC, satellite and calibrated satellite pigments of one station over time, one panel per pigment,
+    with the detection limit (dotted)."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -142,6 +161,7 @@ def plot_series(hplc: pd.DataFrame, predicted: pd.DataFrame, calibrated: pd.Data
                 label="satellite, station cube of the sampling day ±7 days")
         ax.plot(dates[order], calibrated.loc[order, pigment], color=CALIBRATED, lw=1.2,
                 label="satellite calibrated for the station")
+        ax.axhline(limits[pigment], color="#8a8a86", lw=0.8, ls=":")
         ax.set_yscale("log")
         label_log_axis(ax)
         ax.set_title(f"{NAMES[pigment]}: R² = {table.loc[pigment, 'R2']:.2f}, calibrated "
@@ -161,35 +181,40 @@ def plot_series(hplc: pd.DataFrame, predicted: pd.DataFrame, calibrated: pd.Data
 
 def main() -> int:
     samples = read_samples()
-    hplc = samples[list(PAIRS.values())].set_axis(list(PAIRS), axis=1)
+    limits = detection_limits()
+    # HPLC zeros are below detection too: set to the limit, as the values below it
+    hplc = samples[list(PAIRS.values())].set_axis(list(PAIRS), axis=1).clip(lower=limits, axis=1)
     x = satellite_inputs(samples.index)
     models = [name for name, (exp, _) in available_models().items()
               if exp["INP_VARS"] == list(BANDS.values()) and "cnn" in name.lower()]
     rows = []
     for name in models:
         predicted = (Predictor(name).predict(x, logged=True)[list(PAIRS)].median(["lat", "lon", "time"])
-                     .to_dataframe()[list(PAIRS)].dropna())
+                     .to_dataframe()[list(PAIRS)].dropna().clip(lower=limits, axis=1))
         rows.append(scores(hplc.loc[predicted.index], predicted).assign(model=name))
         if name == RECORD_MODEL:
             at = predicted.index
-            plot_scatter(hplc.loc[at], predicted, samples.loc[at, "ST"],
+            plot_scatter(hplc.loc[at], predicted, samples.loc[at, "ST"], limits,
                          f"{RECORD_MODEL} against HPLC, station cubes of the sampling day ±7 days",
                          FIGURES / "hplc_check.png")
             factors, calibrated = calibrate(hplc.loc[at], predicted, samples.loc[at, "ST"])
+            calibrated = calibrated.clip(lower=limits, axis=1)
             factors.to_csv(FACTORS, float_format="%.3f")
             rows.append(scores(hplc.loc[at], calibrated).assign(model=f"{name}, calibrated per station"))
             for station in SERIES:
                 ids = at[samples.loc[at, "ST"] == station]
-                plot_series(hplc.loc[ids], predicted.loc[ids], calibrated.loc[ids], samples.loc[ids, "Date"],
+                plot_series(hplc.loc[ids], predicted.loc[ids], calibrated.loc[ids], samples.loc[ids, "Date"], limits,
                             f"{station}: HPLC and satellite pigments ({RECORD_MODEL})",
                             FIGURES / f"hplc_series_{station}.png")
     table = pd.concat(rows).rename_axis("pigment").reset_index()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     table.to_csv(OUTPUT, index=False, float_format="%.3f")
+    limits.rename_axis("pigment").to_csv(LIMITS, float_format="%.4f")
     print(table.query("model == @RECORD_MODEL").drop(columns="model").round(2).to_string(index=False))
     print(table.groupby("model")[["n", "R2", "r", "MAPE"]].median().sort_values("R2").round(2).to_string())
     print(factors.round(2).to_string())
-    print(f"{OUTPUT}, {FACTORS}, {FIGURES}")
+    print(limits.round(4).to_string())
+    print(f"{OUTPUT}, {FACTORS}, {LIMITS}, {FIGURES}")
     return 0
 
 

@@ -180,13 +180,14 @@ four periods (left) and monthly around BBMO (right).*
   al., 2019), so the trends above start in 2003.
 - *A floor near 0.1 mg m⁻³.* The model never gives chlorophyll a much below 0.1 mg m⁻³, while the
   most oligotrophic Mediterranean averages 0.06 mg m⁻³ (Martínez-Fornos et al., 2026). The Balearic
-  summer sits on it (median 0.12 mg m⁻³ in July–August, 73% of the summer values below 0.12), and so
-  does a quarter of the NW Mediterranean summer: clear summer waters are overestimated and their
+  summer sits on it (median 0.12 mg m⁻³ in July–August, 73% of the summer values below 0.12, near
+  the detection limit of chlorophyll a in the HPLC check of Task 1), and so does a quarter of the NW
+  Mediterranean summer: clear summer waters are overestimated and their
   trends damped.
 - *Composition at the coast.* Against the HPLC samples of the stations (Task 1), the satellite
-  chlorophyll a follows well (r = 0.77, R² = 0.39) but zeaxanthin does not (r = −0.06), the
-  haptophyte and pelagophyte pigments only weakly and at half their HPLC values or less (r =
-  0.36–0.43), and the highest values are missed: the composition signal of 2.1 is weaker at the
+  chlorophyll a follows well (r = 0.77, R² = 0.36) but zeaxanthin does not (r = −0.02), the
+  haptophyte and pelagophyte pigments only weakly and at about a third of their HPLC values (r =
+  0.34–0.42), and the highest values are missed: the composition signal of 2.1 is weaker at the
   coast than the biomass signal. The concentrations at the coast are too low and vary less than in
   situ, which damps trends and seasonal amplitudes without changing their sign or timing. There are no
   HPLC samples around the Balearic Islands to check them there.

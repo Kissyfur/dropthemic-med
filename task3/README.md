@@ -123,6 +123,9 @@ The other groups with models, all at 0.6% of their domain or less, are not follo
   eukaryotes, against 12%).
 - Without the correction of Task 2 the results are similar or worse (MOCH 0.70 and 0.22,
   Synechococcus −0.27 and 0.46).
+- No detection limit is applied, as for the plankton groups of Task 2: the VIDA shares are given to
+  0.01%, and setting the observed and predicted values below 0.01% to it changes r by less than
+  0.01.
 - The data cannot tell whether the error comes from the pigments of Task 1 or from the models of
   Task 2, but the result agrees with the low transferability of the models between ecosystems found
   by Ramond et al. (2026), and with the proposal's choice (Risk 3) to analyse the plankton groups in

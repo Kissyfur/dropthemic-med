@@ -84,28 +84,46 @@ python task1/scripts/hplc_check.py
 The metrics are those of the Task 1 paper: the coefficient of determination R² of ln(pigment), and
 the mean absolute percentage error (MAPE) and the bias (mean percentage error, MPE) of the
 concentrations. The Pearson correlation r of ln(pigment) is added: unlike R², it ignores the bias,
-so it shows whether the satellite pigments rise and fall with the HPLC ones. The script writes
-`task1/data/hplc_check.csv` and the figures below. For the model of the record
+so it shows whether the satellite pigments rise and fall with the HPLC ones.
+
+Values below the detection limit are set to it before scoring, in the HPLC and the satellite
+pigments alike. HPLC detects pigments down to about 0.0001 mg m⁻³ (chlorophyll a; Ras et al., 2008,
+https://doi.org/10.5194/bg-5-353-2008), but the satellite pigments come from the satellite
+reflectance and do not go that low, so the limit is set by the satellite: for each pigment, the 5%
+quantile of the satellite pigments of the whole record around the four stations
+(`task1/data/detection_limits.csv`), the same kind of floor that Task 1 applies to its reflectance
+and to the pigments it was trained on. Below it the satellite cannot tell values apart, and the percentage
+errors on such values are meaningless (a satellite 0.02 against an HPLC 0.001 mg m⁻³ is a +1900%
+error). HPLC zeros, below detection too, now count at the limit instead of being left out. The limit
+touches mostly zeaxanthin (91 of the 196 HPLC values are below it), peridinin (36), chlorophyll b
+(30) and alloxanthin (28), and few satellite values (2–7 per pigment).
+
+The script writes `task1/data/hplc_check.csv` and the figures below. For the model of the record
 (`multi_sat_ft/concatenatedCNN`), on all 196 samples:
 
-| Pigment | R² | r | MAPE | Bias (MPE) |
-|---|---|---|---|---|
-| Chlorophyll a | 0.39 | 0.77 | 35% | −19% |
-| Chlorophyll b | 0.26 | 0.60 | 75% | +11% |
-| Diadinoxanthin | 0.24 | 0.68 | 55% | −18% |
-| β-carotene | 0.20 | 0.55 | 48% | +10% |
-| Peridinin | 0.19 | 0.50 | 122% | +52% |
-| Alloxanthin | 0.05 | 0.72 | 73% | −27% |
-| Fucoxanthin | 0.00 | 0.77 | 78% | −41% |
-| Zeaxanthin | −0.69 | −0.06 | 394% | +379% |
-| 19'-butanoyloxyfucoxanthin | −1.63 | 0.36 | 66% | −58% |
-| 19'-hexanoyloxyfucoxanthin | −1.73 | 0.43 | 66% | −60% |
+| Pigment | Detection limit (mg m⁻³) | R² | r | MAPE | Bias (MPE) |
+|---|---|---|---|---|---|
+| Chlorophyll a | 0.125 | 0.36 | 0.77 | 33% | −21% |
+| Diadinoxanthin | 0.009 | 0.18 | 0.68 | 49% | −24% |
+| Peridinin | 0.003 | 0.18 | 0.51 | 83% | +15% |
+| Chlorophyll b | 0.012 | 0.17 | 0.59 | 50% | −13% |
+| β-carotene | 0.004 | 0.14 | 0.56 | 41% | +3% |
+| Alloxanthin | 0.003 | 0.00 | 0.74 | 57% | −41% |
+| Fucoxanthin | 0.007 | −0.02 | 0.77 | 73% | −46% |
+| Zeaxanthin | 0.018 | −0.89 | −0.02 | 85% | +70% |
+| 19'-butanoyloxyfucoxanthin | 0.006 | −1.67 | 0.34 | 64% | −59% |
+| 19'-hexanoyloxyfucoxanthin | 0.017 | −1.80 | 0.42 | 65% | −61% |
 
-- R² is at most 0.39, against 0.70–0.93 in situ and about 0.2 less on satellite data in the paper,
-  mostly because of biases: the satellite pigments rise and fall with the HPLC ones (r = 0.60–0.77
+- The detection limit mostly removes percentage errors on values that the satellite cannot see:
+  without it, the bias of zeaxanthin was +379% and of peridinin +52%, and the median MAPE 70%
+  instead of 60%. It lowers R² a little (median over the 10 pigments 0.12 without it, 0.07 with
+  it), since it narrows the range of the HPLC values, and leaves r unchanged.
+- R² is at most 0.36, against 0.70–0.93 in situ and about 0.2 less on satellite data in the paper,
+  mostly because of biases: the satellite pigments rise and fall with the HPLC ones (r = 0.59–0.77
   for chlorophylls a and b, fucoxanthin, alloxanthin and diadinoxanthin), but fucoxanthin and the
-  haptophyte and pelagophyte pigments come out at half the HPLC values or less, and zeaxanthin
-  about five times higher. Zeaxanthin barely varies: it stays near 0.04 mg m⁻³.
+  haptophyte and pelagophyte pigments come out at about a third of the HPLC values (median ratio
+  0.27–0.32), and zeaxanthin about 1.8 times higher. Zeaxanthin barely varies: it stays near
+  0.04 mg m⁻³, and half of the HPLC values are below what the satellite gives.
 - The underestimation is a coastal one and grows with concentration, as the satellite pigments vary
   less than the HPLC ones. Over time they follow the timing of the BBMO samples and the seasonal
   cycle of the weekly SOLA samples of 2015–2016, but not the size of their peaks. Fucoxanthin and
@@ -121,53 +139,54 @@ so it shows whether the satellite pigments rise and fall with the HPLC ones. The
 
   | Factor (HPLC / satellite) | Chl a | Chl b | Fuco | 19'-hex | 19'-but | Diadino | Allo | Zea | β-car | Peri |
   |---|---|---|---|---|---|---|---|---|---|---|
-  | BBMO | 1.40 | 1.57 | 2.52 | 2.12 | 1.95 | 1.16 | 1.64 | 0.30 | 1.29 | 0.72 |
-  | SOLA | 1.25 | 1.33 | 4.69 | 6.46 | 7.93 | 2.36 | 3.73 | 0.79 | 0.89 | 3.56 |
-  | MOLA | 0.92 | 0.31 | 0.94 | 1.23 | 1.54 | 0.95 | 1.52 | 0.49 | 1.28 | 0.95 |
+  | BBMO | 1.40 | 1.57 | 2.52 | 2.12 | 1.95 | 1.16 | 1.64 | 0.44 | 1.29 | 0.81 |
+  | SOLA | 1.25 | 1.29 | 4.69 | 6.46 | 7.79 | 2.36 | 3.48 | 0.79 | 0.89 | 3.34 |
+  | MOLA | 1.00 | 1.00 | 0.95 | 1.23 | 1.54 | 0.95 | 1.00 | 0.56 | 1.28 | 0.99 |
 
-  Calibrated, the median R² over the 10 pigments goes from 0.12 to 0.58 on the 196 samples, and the
+  Calibrated, the median R² over the 10 pigments goes from 0.07 to 0.57 on the 196 samples, and the
   median satellite/HPLC ratio of every pigment to about 1. The weak pigments gain most
-  (fucoxanthin 0.00 → 0.64, 19'-hexanoyloxyfucoxanthin −1.73 → 0.65, 19'-butanoyloxyfucoxanthin
-  −1.63 → 0.66, peridinin 0.20 → 0.64); zeaxanthin stays poor (0.19), and β-carotene and
+  (fucoxanthin −0.02 → 0.65, 19'-hexanoyloxyfucoxanthin −1.80 → 0.65, 19'-butanoyloxyfucoxanthin
+  −1.67 → 0.61, alloxanthin 0.00 → 0.56); zeaxanthin stays poor (0.09), and β-carotene and
   chlorophyll b gain little. These scores are on the samples the factors come from, so they are
   optimistic: with factors from the other years of each station only, the median R² is 0.54 at BBMO
-  and SOLA together, 0.13 within BBMO and 0.28 within SOLA (part of the gain is removing the offset
+  and SOLA together, 0.13 within BBMO and 0.26 within SOLA (part of the gain is removing the offset
   between stations). One factor corrects the level, not the range: the peaks stay flattened.
 - The calibration is not applied to the satellite record, because the factors follow the water type
   more than the region: the coastal stations need fucoxanthin × 2.5 (BBMO) and × 4.7 (SOLA), the
-  offshore MOLA almost nothing (× 0.94). One regional factor from all the samples, nearly all
-  coastal, would improve the coastal stations a little (median R² at SOLA −1.39 → 0.08) but spoil
-  MOLA (0.40 → −0.02), and the regional maps are mostly open sea. The factors
-  (`task1/data/station_factors.csv`) give the absolute concentrations at the three stations, while a
-  constant factor would not change the trends and seasonal timing of Task 4.
+  offshore MOLA almost nothing (× 0.95). One regional factor from all the samples, nearly all
+  coastal, would improve the coastal stations a little (median R² at SOLA −1.11 → 0.09) but worsen
+  MOLA (0.41 → 0.17, against 0.43 with its own factors), and the regional maps are mostly open sea.
+  The factors (`task1/data/station_factors.csv`) give the absolute concentrations at the three
+  stations, while a constant factor would not change the trends and seasonal timing of Task 4.
 - Of the five CNNs, the one of the record, fine-tuned with satellite matchups, has the best median
-  R² (0.12, against −0.22 to −0.06) and is the best for chlorophylls a and b and fucoxanthin. The
-  others do better for 19'-hexanoyloxyfucoxanthin (r = 0.58–0.60 for three of them, against 0.43)
-  and peridinin, and none for zeaxanthin.
+  R² (0.07, against −0.33 to −0.11) and is the best for chlorophylls a and b and fucoxanthin. The
+  others do better for 19'-hexanoyloxyfucoxanthin (r = 0.60–0.61 for three of them, against 0.42),
+  diadinoxanthin and peridinin, and none for zeaxanthin.
 - The window, 5 × 5 pixels (about 5 km) and the sampling day ±7 days, was the best of those tried
-  (the tests are not kept). With 11 × 9 pixels the median R² is 0.05 and the bias −24%, against
-  0.12 and −18%: the larger area adds offshore water, with less pigment than the coastal stations.
-  3 × 3 pixels reduce the bias a little more but lose 14 samples. The sampling day alone matches
-  only 65 samples and agrees less with HPLC, as daily retrievals are noisy, and the global 4 km
-  product with which the model was fine-tuned overestimates chlorophyll a by about 60% next to the
-  coast.
+  (the tests are not kept, and were scored before the detection limit was set). With 11 × 9 pixels
+  the median R² was 0.05 and the bias −24%, against 0.12 and −18%: the larger area adds offshore
+  water, with less pigment than the coastal stations. 3 × 3 pixels reduce the bias a little more
+  but lose 14 samples. The sampling day alone matches only 65 samples and agrees less with HPLC, as
+  daily retrievals are noisy, and the global 4 km product with which the model was fine-tuned
+  overestimates chlorophyll a by about 60% next to the coast.
 
 <p align="center">
   <img src="report/hplc_check.png" width="80%" alt="Satellite against HPLC pigments at SOLA, BBMO and MOLA">
 </p>
 
-*`multi_sat_ft/concatenatedCNN` on the station cubes (sampling day ±7 days) against HPLC, all samples.*
+*`multi_sat_ft/concatenatedCNN` on the station cubes (sampling day ±7 days) against HPLC, all
+samples; dotted, the detection limit, to which the values below it are set.*
 
 <p align="center">
   <img src="report/hplc_series_BBMO.png" width="80%" alt="HPLC and satellite pigments at BBMO, 2004-2014">
 </p>
 
 *HPLC and satellite pigments at BBMO, 2004–2014, as retrieved and calibrated for the station; R² and
-r of this station.*
+r of this station; dotted, the detection limit.*
 
 <p align="center">
   <img src="report/hplc_series_SOLA.png" width="80%" alt="HPLC and satellite pigments at SOLA, 2015-2016">
 </p>
 
 *HPLC and satellite pigments at SOLA, 2015–2016, as retrieved and calibrated for the station; R² and
-r of this station.*
+r of this station; dotted, the detection limit.*
