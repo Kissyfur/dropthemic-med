@@ -116,13 +116,30 @@ so it shows whether the satellite pigments rise and fall with the HPLC ones. The
   timing, the measures of Task 4. But the satellite pigments also vary less than the HPLC ones, so
   trends and seasonal amplitudes are damped, though their sign and timing hold, and the composition
   is distorted, which Task 2 corrects before using the pigments.
-- A calibration against HPLC, one factor per pigment, would help where it is fitted: fitted on the
-  other years of the same stations, it raises the median R² from 0.12 to 0.25 (fucoxanthin 0.00 →
-  0.56, chlorophyll a 0.39 → 0.56). But it does not carry over to another site, as the bias depends
-  on the site: fitted at BBMO, it leaves SOLA poor (median R² −1.39 → −0.65), and fitted at SOLA, it
-  makes BBMO worse (−0.33 → −0.49). Mapping the whole distribution (quantile mapping) does no better.
-  It is not applied: most of the record has no HPLC to fit it, a constant factor does not change the
-  trends and seasonal timing of Task 4, and the project applies the published models as they are.
+- The bias depends on the station, so the check also calibrates the model per station: each
+  pigment times one factor, the median HPLC/satellite ratio of all the samples of the station.
+
+  | Factor (HPLC / satellite) | Chl a | Chl b | Fuco | 19'-hex | 19'-but | Diadino | Allo | Zea | β-car | Peri |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | BBMO | 1.40 | 1.57 | 2.52 | 2.12 | 1.95 | 1.16 | 1.64 | 0.30 | 1.29 | 0.72 |
+  | SOLA | 1.25 | 1.33 | 4.69 | 6.46 | 7.93 | 2.36 | 3.73 | 0.79 | 0.89 | 3.56 |
+  | MOLA | 0.92 | 0.31 | 0.94 | 1.23 | 1.54 | 0.95 | 1.52 | 0.49 | 1.28 | 0.95 |
+
+  Calibrated, the median R² over the 10 pigments goes from 0.12 to 0.58 on the 196 samples, and the
+  median satellite/HPLC ratio of every pigment to about 1. The weak pigments gain most
+  (fucoxanthin 0.00 → 0.64, 19'-hexanoyloxyfucoxanthin −1.73 → 0.65, 19'-butanoyloxyfucoxanthin
+  −1.63 → 0.66, peridinin 0.20 → 0.64); zeaxanthin stays poor (0.19), and β-carotene and
+  chlorophyll b gain little. These scores are on the samples the factors come from, so they are
+  optimistic: with factors from the other years of each station only, the median R² is 0.54 at BBMO
+  and SOLA together, 0.13 within BBMO and 0.28 within SOLA (part of the gain is removing the offset
+  between stations). One factor corrects the level, not the range: the peaks stay flattened.
+- The calibration is not applied to the satellite record, because the factors follow the water type
+  more than the region: the coastal stations need fucoxanthin × 2.5 (BBMO) and × 4.7 (SOLA), the
+  offshore MOLA almost nothing (× 0.94). One regional factor from all the samples, nearly all
+  coastal, would improve the coastal stations a little (median R² at SOLA −1.39 → 0.08) but spoil
+  MOLA (0.40 → −0.02), and the regional maps are mostly open sea. The factors
+  (`task1/data/station_factors.csv`) give the absolute concentrations at the three stations, while a
+  constant factor would not change the trends and seasonal timing of Task 4.
 - Of the five CNNs, the one of the record, fine-tuned with satellite matchups, has the best median
   R² (0.12, against −0.22 to −0.06) and is the best for chlorophylls a and b and fucoxanthin. The
   others do better for 19'-hexanoyloxyfucoxanthin (r = 0.58–0.60 for three of them, against 0.43)
@@ -145,10 +162,12 @@ so it shows whether the satellite pigments rise and fall with the HPLC ones. The
   <img src="report/hplc_series_BBMO.png" width="80%" alt="HPLC and satellite pigments at BBMO, 2004-2014">
 </p>
 
-*HPLC and satellite pigments at BBMO, 2004–2014; R² and r of this station.*
+*HPLC and satellite pigments at BBMO, 2004–2014, as retrieved and calibrated for the station; R² and
+r of this station.*
 
 <p align="center">
   <img src="report/hplc_series_SOLA.png" width="80%" alt="HPLC and satellite pigments at SOLA, 2015-2016">
 </p>
 
-*HPLC and satellite pigments at SOLA, 2015–2016; R² and r of this station.*
+*HPLC and satellite pigments at SOLA, 2015–2016, as retrieved and calibrated for the station; R² and
+r of this station.*

@@ -93,6 +93,9 @@ python task3/scripts/validate_chain.py
 - The underestimation is coastal and grows with concentration (13–21% of HPLC for those pigments in
   the SOLA blooms, nearly unbiased offshore at MOLA). It damps trends and seasonal amplitudes
   without changing their sign or timing, and it distorts the composition that Task 2 uses.
+- Calibrated per station with HPLC (one factor per pigment and station), the median R² rises from
+  0.12 to 0.58 (0.54 with factors from other years). The factors depend on the water type
+  (fucoxanthin × 4.7 at SOLA, × 0.94 offshore at MOLA), so they are not applied to the regional maps.
 - The CNN of the record, fine-tuned with satellite matchups, is the best of the Task 1 CNNs at the
   stations. Small windows (5 km) and ±7 days around the sample work best: larger areas add offshore
   water.

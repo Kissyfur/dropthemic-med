@@ -10,6 +10,12 @@ their median is compared with the HPLC pigments, for the 10 pigments of the prop
 Pearson r of ln(pigment), and MAPE and MPE (bias) of the concentrations, as in the Task 1 paper.
 Writes task1/data/hplc_check.csv and, for the model of the record, task1/figures/hplc_check.png
 (each pigment, all samples) and task1/figures/hplc_series_<station>.png (each pigment over time).
+
+The bias of the model depends on the station, so the model of the record is also calibrated per
+station: each pigment times the median HPLC/satellite ratio of all the samples of the station
+(task1/data/station_factors.csv). The calibrated pigments are scored (on the samples the factors
+come from, so optimistically) and drawn in the series. The calibration is not applied to the
+satellite record.
 """
 from __future__ import annotations
 
@@ -26,6 +32,7 @@ from pigment_retrieval.predict.predict import Predictor, available_models  # noq
 DATA_DIR = Path("task2/PETRIMED/DATA")
 STATION_CUBES = Path("task1/data/station_matchups/datasets/optics.nc")
 OUTPUT = Path("task1/data/hplc_check.csv")
+FACTORS = Path("task1/data/station_factors.csv")
 FIGURES = Path("task1/figures")
 RECORD_MODEL = "multi_sat_ft/concatenatedCNN"   # the model of the satellite record
 SERIES = ["BBMO", "SOLA"]                       # stations with a time series of samples
@@ -37,7 +44,7 @@ PAIRS = {"chl_a": "Chl_a", "chl_b": "Chl_b", "fucox": "Fucoxanthin", "hxfcx": "1
 NAMES = {"chl_a": "Chlorophyll a", "chl_b": "Chlorophyll b", "fucox": "Fucoxanthin",
          "hxfcx": "19'-hexanoyloxyfucoxanthin", "btfcx": "19'-butanoyloxyfucoxanthin", "diadi": "Diadinoxanthin",
          "allox": "Alloxanthin", "zeaxa": "Zeaxanthin", "betac": "β-carotene", "perid": "Peridinin"}
-INK, SATELLITE = "#52514e", "#eb6834"
+INK, SATELLITE, CALIBRATED = "#52514e", "#eb6834", "#2a78d6"
 STATION_COLORS = {"BBMO": "#2a78d6", "SOLA": "#eb6834", "MOLA": "#1baf7a"}
 
 
@@ -101,6 +108,13 @@ def plot_scatter(hplc: pd.DataFrame, predicted: pd.DataFrame, stations: pd.Serie
     plt.close(fig)
 
 
+def calibrate(hplc: pd.DataFrame, predicted: pd.DataFrame, stations: pd.Series) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Per-station factors, the median HPLC/satellite ratio of each pigment over all the samples of
+    the station, and the pigments calibrated with the factors of their station."""
+    factors = np.exp((np.log(hplc.where(hplc > 0)) - np.log(predicted)).groupby(stations).median())
+    return factors.rename_axis("station"), predicted * factors.loc[stations].set_axis(predicted.index)
+
+
 def label_log_axis(ax) -> None:
     """Plain labels at 1, 2 and 5 of each decade on a narrow log y axis, at each decade on a wide one."""
     from matplotlib.ticker import FuncFormatter, LogLocator, NullLocator
@@ -110,29 +124,34 @@ def label_log_axis(ax) -> None:
     ax.yaxis.set_minor_locator(NullLocator())
 
 
-def plot_series(hplc: pd.DataFrame, predicted: pd.DataFrame, dates: pd.Series, title: str, path: Path) -> None:
-    """HPLC and satellite pigments of one station over time, one panel per pigment."""
+def plot_series(hplc: pd.DataFrame, predicted: pd.DataFrame, calibrated: pd.DataFrame, dates: pd.Series,
+                title: str, path: Path) -> None:
+    """HPLC, satellite and calibrated satellite pigments of one station over time, one panel per pigment."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     order = dates.sort_values().index
     table = scores(hplc.loc[order], predicted.loc[order])
+    table_calibrated = scores(hplc.loc[order], calibrated.loc[order])
     fig, axes = plt.subplots(5, 2, figsize=(10, 9.5), sharex=True, layout="constrained")
     for ax, pigment in zip(axes.T.flat, PAIRS):
         observed = hplc.loc[order, pigment]
         ax.plot(dates[order], observed.where(observed > 0), color=INK, lw=1.4, marker="o", ms=3, label="HPLC")
         ax.plot(dates[order], predicted.loc[order, pigment], color=SATELLITE, lw=1.2,
                 label="satellite, station cube of the sampling day ±7 days")
+        ax.plot(dates[order], calibrated.loc[order, pigment], color=CALIBRATED, lw=1.2,
+                label="satellite calibrated for the station")
         ax.set_yscale("log")
         label_log_axis(ax)
-        ax.set_title(f"{NAMES[pigment]}: R² = {table.loc[pigment, 'R2']:.2f}, r = {table.loc[pigment, 'r']:.2f}",
+        ax.set_title(f"{NAMES[pigment]}: R² = {table.loc[pigment, 'R2']:.2f}, calibrated "
+                     f"{table_calibrated.loc[pigment, 'R2']:.2f}; r = {table.loc[pigment, 'r']:.2f}",
                      fontsize=9, loc="left")
         ax.tick_params(labelsize=7)
         ax.grid(axis="y", color="#e5e5e2", lw=0.6)
         ax.spines[["top", "right"]].set_visible(False)
     fig.supylabel("mg m$^{-3}$")
-    fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=2, frameon=False,
+    fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=3, frameon=False,
                fontsize=8)
     fig.suptitle(title)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -156,9 +175,12 @@ def main() -> int:
             plot_scatter(hplc.loc[at], predicted, samples.loc[at, "ST"],
                          f"{RECORD_MODEL} against HPLC, station cubes of the sampling day ±7 days",
                          FIGURES / "hplc_check.png")
+            factors, calibrated = calibrate(hplc.loc[at], predicted, samples.loc[at, "ST"])
+            factors.to_csv(FACTORS, float_format="%.3f")
+            rows.append(scores(hplc.loc[at], calibrated).assign(model=f"{name}, calibrated per station"))
             for station in SERIES:
                 ids = at[samples.loc[at, "ST"] == station]
-                plot_series(hplc.loc[ids], predicted.loc[ids], samples.loc[ids, "Date"],
+                plot_series(hplc.loc[ids], predicted.loc[ids], calibrated.loc[ids], samples.loc[ids, "Date"],
                             f"{station}: HPLC and satellite pigments ({RECORD_MODEL})",
                             FIGURES / f"hplc_series_{station}.png")
     table = pd.concat(rows).rename_axis("pigment").reset_index()
@@ -166,7 +188,8 @@ def main() -> int:
     table.to_csv(OUTPUT, index=False, float_format="%.3f")
     print(table.query("model == @RECORD_MODEL").drop(columns="model").round(2).to_string(index=False))
     print(table.groupby("model")[["n", "R2", "r", "MAPE"]].median().sort_values("R2").round(2).to_string())
-    print(f"{OUTPUT}, {FIGURES}")
+    print(factors.round(2).to_string())
+    print(f"{OUTPUT}, {FACTORS}, {FIGURES}")
     return 0
 
 
