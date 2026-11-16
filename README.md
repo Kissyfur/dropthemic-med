@@ -20,7 +20,7 @@ them: those of [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment
 |---|---|---|---|
 | 1 | Pigment concentrations from radiometry | Model and paper; applied to the satellite record and checked against HPLC | [task1](task1/README.md) |
 | 2 | Plankton groups from pigments | PETRIMED models, tested away from SOLA and on satellite pigments; the biodiversity indicator is to come | [task2](task2/README.md) |
-| 3 | Plankton groups at VIDA from metabarcoding (about monthly, 2021–2023) | Data and description | [task3](task3/README.md) |
+| 3 | Plankton groups at VIDA from metabarcoding (about monthly, 2021–2023) | Data, description and validation of the chain of Tasks 1 and 2 | [task3](task3/README.md) |
 | 4 | Satellite radiometry → pigments → diversity, 1997 to today | Analysis and technical note (draft) | [task4](task4/README.md) |
 
 ## Files
@@ -29,7 +29,7 @@ them: those of [pigment-retrieval-from-olci](https://github.com/Kissyfur/pigment
 |---|---|---|---|---|
 | 1 | [task1/README.md](task1/README.md) | [download_monthly_means.py](task1/scripts/download_monthly_means.py), [station_matchups.py](task1/scripts/station_matchups.py), [predict_pigments.py](task1/scripts/predict_pigments.py), [hplc_check.py](task1/scripts/hplc_check.py) | [med_radiometry_monthly.yaml](task1/configs/med_radiometry_monthly.yaml), [station_matchups.yaml](task1/configs/station_matchups.yaml) | [task1/report](task1/report/) |
 | 2 | [task2/README.md](task2/README.md) | [export_models.R](task2/scripts/export_models.R), [psts.py](task2/scripts/psts.py), [predict_psts.py](task2/scripts/predict_psts.py) | [PETRIMED](https://github.com/pjmramond/PETRIMED) (cloned into `task2/PETRIMED`) | [task2/report](task2/report/) |
-| 3 | [task3/README.md](task3/README.md) | [describe_vida.py](task3/scripts/describe_vida.py) | [VIDA_PST.xlsx](task3/VIDA_PST.xlsx) | [task3/report](task3/report/) |
+| 3 | [task3/README.md](task3/README.md) | [describe_vida.py](task3/scripts/describe_vida.py), [validate_chain.py](task3/scripts/validate_chain.py) | [VIDA_PST.xlsx](task3/VIDA_PST.xlsx) | [task3/report](task3/report/) |
 | 4 | [task4/README.md](task4/README.md) (technical note) | [figures.py](task4/scripts/figures.py) | the outputs of Tasks 1 and 2 | [task4/report](task4/report/) |
 
 ## Installation
@@ -74,8 +74,9 @@ python task2/scripts/predict_psts.py
 python task1/scripts/hplc_check.py
 python task4/scripts/figures.py
 
-# Task 3: description of the VIDA data (independent of the others)
+# Task 3: description of the VIDA data, and validation of the chain of Tasks 1 and 2
 python task3/scripts/describe_vida.py
+python task3/scripts/validate_chain.py
 ```
 
 ## Main results
@@ -84,22 +85,26 @@ python task3/scripts/describe_vida.py
 - The 13 pigments for every month of the 1 km multi-sensor record, 1997–2026, over the NW
   Mediterranean and the Balearic Islands, and for every day around four stations: BBMO, SOLA and
   MOLA on the Catalan and French coast, and VIDA in the Gulf of Trieste.
-- Against the 196 HPLC samples of SOLA, BBMO and MOLA (station cubes, sampling day ±7 days), the
-  satellite pigments rise and fall with the HPLC ones (r = 0.78 for chlorophyll a and 0.76 for
-  fucoxanthin, on ln values) but are biased, so R², the metric of the paper, is at most 0.33:
+- Against the 196 HPLC samples of SOLA, BBMO and MOLA (5 × 5 pixels around the station, sampling
+  day ±7 days), the satellite pigments rise and fall with the HPLC ones (r = 0.77 for chlorophyll a
+  and fucoxanthin, on ln values) but are biased, so R², the metric of the paper, is at most 0.39:
   fucoxanthin and the haptophyte and pelagophyte pigments come out at half the HPLC values or less,
-  and zeaxanthin about five times higher, without following the HPLC one. Bloom peaks are missed.
+  and zeaxanthin about five times higher, without following the HPLC one.
+- The underestimation is coastal and grows with concentration (13–21% of HPLC for those pigments in
+  the SOLA blooms, nearly unbiased offshore at MOLA). It damps trends and seasonal amplitudes
+  without changing their sign or timing, and it distorts the composition that Task 2 uses.
 - The CNN of the record, fine-tuned with satellite matchups, is the best of the Task 1 CNNs at the
-  stations. A window of ±7 days around the sample matters more than a larger area, which only adds
-  offshore water.
+  stations. Small windows (5 km) and ±7 days around the sample work best: larger areas add offshore
+  water.
 
 **Task 2 — Plankton groups from pigments** ([details](task2/README.md); provisional)
 - The PETRIMED models (Ramond et al., 2026) run in Python with the same results as in R. Trained
   at SOLA, only 4 of the 18 psbO plankton groups keep r ≥ 0.5 at BBMO: Micromonas, Synechococcus,
   Pelagophyceae and Bathycoccus.
-- From the satellite pigments none holds until their composition is harmonized with the HPLC one;
-  then Synechococcus does (r = 0.62 monthly, 0.89 for the seasonal cycle), mostly as a
-  low-chlorophyll signal.
+- From the satellite pigments none holds until their composition is corrected: each pigment share
+  times one factor, the ratio of its median HPLC share to its median satellite share (fucoxanthin
+  × 4.3, zeaxanthin × 0.19). Then Synechococcus holds (r = 0.56 monthly, 0.87 for the seasonal
+  cycle), mostly as a low-chlorophyll signal.
 - The biodiversity indicator of PETRIMED is still to come; this task will be rewritten with it.
 
 **Task 3 — Plankton groups at VIDA** ([details](task3/README.md))
@@ -108,8 +113,11 @@ python task3/scripts/describe_vida.py
 - Synechococcus is 15% of the prokaryotes on average, lowest in December (1–4%) and highest in
   July and October–November (up to 50%). Diatoms are the main photosynthetic eukaryotes (5% of the
   eukaryotes on average, up to 14%), without a regular season.
-- The satellite predictions of Task 4 put the maximum of Synechococcus at VIDA in May, when its
-  observed share is lower than in March, July and autumn: the Task 2 models do not hold there.
+- As a validation of the chain of Tasks 1 and 2, the PETRIMED metabarcoding models, in the units
+  of the VIDA data, were applied to the satellite pigments of each sample's month. They do not follow
+  most groups (Synechococcus r = −0.17 or 0.48 depending on the fraction of the models, diatoms
+  0.13–0.36, dinoflagellates predicted 8–27 times too high); only MOCH does (r = 0.56–0.76). This
+  agrees with the low transferability of the models between ecosystems.
 
 **Task 4 — 25 years of satellite records** ([technical note](task4/README.md))
 - The satellite pigments carry two signals, biomass and one axis of composition (haptophyte and

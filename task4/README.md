@@ -23,14 +23,15 @@ limit the trends and the composition signal.
 ## 1. Data and methods
 
 - **Areas**: two regions of monthly maps, the NW Mediterranean (40.5–43.5 N, 1.5–5.5 E) and the
-  Balearic Islands (38.55–40.2 N, 1.1–4.5 E); and four stations, each with the 11 × 9 pixels (about
-  11 × 10 km) around it: BBMO (Blanes Bay), SOLA and MOLA (Banyuls-sur-Mer, coastal and offshore)
+  Balearic Islands (38.55–40.2 N, 1.1–4.5 E); and four stations, each with the 5 × 5 pixels (about
+  5 × 5 km) around it: BBMO (Blanes Bay), SOLA and MOLA (Banyuls-sur-Mer, coastal and offshore)
   and VIDA (Vida buoy, Gulf of Trieste).
 - **Pigments**: the 13 pigments of the Task 1 model fine-tuned with satellite matchups, on the
   monthly means of the daily 1 km multi-sensor Rrs and on the daily cubes of the stations
   ([Task 1](../task1/README.md)), checked against HPLC samples at the stations.
 - **Plankton groups**: Synechococcus and Bathycoccus (pico, psbO), the PETRIMED models (Ramond et
-  al., 2026) that hold from the satellite pigments once harmonized ([Task 2](../task2/README.md)).
+  al., 2026) that hold from the satellite pigments once their composition is corrected
+  ([Task 2](../task2/README.md)).
 - **Statistics**: months averaged from fewer than 3 days are left out; a region's value is the
   median of its pixels, a station's the median of its pixels and days; trends are log-linear fits
   of the annual values from 2003 to 2025 (see 3 for why 2003); the principal components are those
@@ -78,9 +79,9 @@ are the stations.*
 
 **2.3. Winter around the Balearic Islands, late winter in Catalonia, autumn in the Gulf of
 Trieste.** At BBMO, SOLA and MOLA almost every pigment peaks between January and March and is
-lowest in July–August, except zeaxanthin. Fucoxanthin varies 4 to 16 times over the year,
+lowest in July–August, except zeaxanthin. Fucoxanthin varies 4 to 18 times over the year,
 zeaxanthin only 1.2 to 1.4 times (peak in May), so the zeaxanthin share of chlorophyll a triples in
-summer (BBMO 0.11 → 0.32) while the fucoxanthin share halves. The BBMO HPLC series shows the same
+summer (BBMO 0.11 → 0.31) while the fucoxanthin share halves. The BBMO HPLC series shows the same
 winter–spring maxima and summer minima (Nunes et al., 2018).
 
 Around the Balearic Islands the pigments peak in January, two months before the NW Mediterranean
@@ -114,10 +115,10 @@ the Balearic Islands.** Trends from 2003 to 2025, in % per decade (n.s.: not sig
 |---|---|---|---|
 | NW Mediterranean (region) | −8 | −18 | +5 |
 | Balearic Islands (region) | −5 | −12 | +2 |
-| BBMO | −19 | −32 | 0 (n.s.) |
-| SOLA | −17 | −22 | −2 (n.s.) |
-| MOLA | −9 | −19 | +4 |
-| VIDA | −4 (n.s.) | +2 (n.s.) | −7 |
+| BBMO | −19 | −32 | −2 (n.s.) |
+| SOLA | −19 | −24 | −4 (n.s.) |
+| MOLA | −10 | −20 | +4 |
+| VIDA | −4 (n.s.) | +3 (n.s.) | −7 |
 
 Chlorophyll a and fucoxanthin fall in both regions and at the three Catalan and French stations, most
 at the coast (BBMO, SOLA) and least around the Balearic Islands; the decline is significant in
@@ -133,31 +134,32 @@ disagreement: Martínez-Fornos et al. find green algae falling, while the share 
 here rises slightly (4% per decade in the NW Mediterranean, 2% around the Balearic Islands).
 
 **2.5. VIDA: years set by the rivers, no trend.** Around VIDA the annual chlorophyll a varies from
-0.51 to 1.09 mg m⁻³. The lowest years, 2022 and 2023, follow the severe drought of 2022 in northern
-Italy, and the highest are 2001, 1998 and 2010: satellite chlorophyll in the north Adriatic follows
+0.49 to 1.10 mg m⁻³. The lowest years, 2022 and 2023, follow the severe drought of 2022 in northern
+Italy, and the highest are 2001, 1998 and 2000: satellite chlorophyll in the north Adriatic follows
 the river discharge (Vona et al., 2025). From 2003 to 2025 chlorophyll a has no significant trend
 (−4% per decade, p = 0.4), as Martínez-Fornos et al. (2026) find for the north Adriatic. The
 oligotrophication of the north Adriatic measured in situ (Mozetič et al., 2010) was strongest in the
-decade to 2007, so part of the drop of chlorophyll a between 1998–2002 and 2003–2007 here (−28%) may
+decade to 2007, so part of the drop of chlorophyll a between 1998–2002 and 2003–2007 here (−29%) may
 be real.
 
 **2.6. Plankton groups: Synechococcus follows low chlorophyll (provisional).** Of the PETRIMED
 plankton groups, only Synechococcus holds from the satellite pigments (Task 2). Around the three NW
-Mediterranean stations it peaks in July and is 2.4–2.6 times lower in winter, as observed at BBMO
-(peak in August), and its monthly values follow the satellite share of zeaxanthin (r = 0.56–0.71).
-But the satellite zeaxanthin barely varies (coefficient of variation 0.11–0.16 at the stations,
-against 0.43–0.59 for chlorophyll a), so its share is almost the inverse of chlorophyll a (r = −0.96
-to −0.97): the indicator is mostly a low-chlorophyll, oligotrophy signal. It holds because
+Mediterranean stations it peaks in July–August and is 1.7–3.3 times lower in December–March, as
+observed at BBMO (peak in August), and its monthly values follow the satellite share of zeaxanthin
+(r = 0.80–0.87). But the satellite zeaxanthin barely varies (coefficient of variation 0.14–0.18 at
+the stations, against 0.44–0.62 for chlorophyll a), so its share is almost the inverse of
+chlorophyll a (r = −0.96): the indicator is mostly a low-chlorophyll, oligotrophy signal. It holds because
 Synechococcus follows that signal too: at BBMO the observed Synechococcus goes with the HPLC share of
 zeaxanthin (r = 0.53) and against chlorophyll a (r = −0.28). Bathycoccus peaks in winter (November
 to April), like the prasinophytes at BBMO (Nunes et al., 2018), but the maps put it offshore rather
-than on the coast, so only its seasonal cycle is usable. From 2003 to 2025 Synechococcus does not
-change over the regions (+1% per decade in the NW Mediterranean, 0% around the Balearic Islands)
-and Bathycoccus falls 3–4% per decade (significant in the NW Mediterranean only), while at BBMO
-Synechococcus falls 16% per decade. At VIDA, Synechococcus peaks in May and goes against the
-zeaxanthin share (r = −0.66), a sign that the models, made in the NW Mediterranean, do not hold
-there. The VIDA metabarcoding of [Task 3](../task3/README.md) agrees: the observed share of
-Synechococcus is lower in May than in March, July and autumn.
+than on the coast, and even its seasonal cycle is only weakly checked (r = 0.34 at BBMO). From
+2003 to 2025 Synechococcus rises 2% per decade in the NW Mediterranean and 4% at MOLA, and
+Bathycoccus falls 5% per decade in the NW Mediterranean; around the Balearic Islands neither
+changes significantly. These trends change with the details of the method (with the earlier
+window and correction, Synechococcus fell 16% per decade at BBMO, against +3% now), so they are
+not robust, unlike the seasonal cycle. At VIDA, Synechococcus peaks in June and does not follow the
+zeaxanthin share (r = −0.26): the models, made in the NW Mediterranean, do not hold there, as the
+VIDA metabarcoding of [Task 3](../task3/README.md) confirms.
 
 <p>
   <img src="report/psts_nw_mediterranean_periods.png" width="49%"
@@ -171,8 +173,8 @@ four periods (left) and monthly around BBMO (right).*
 
 ## 3. Limits
 
-- *A step in 2002–2003.* From 1998–2002 to 2003–2007, chlorophyll a drops 12–28% at the four
-  stations (alloxanthin up to 44%), and offshore zeaxanthin jumps in both regions (+17% for the
+- *A step in 2002–2003.* From 1998–2002 to 2003–2007, chlorophyll a drops 13–29% at the four
+  stations (alloxanthin up to 46%), and offshore zeaxanthin jumps in both regions (+17% for the
   regional median in the NW Mediterranean, +11% around the Balearic Islands). It coincides with
   MODIS-Aqua and MERIS joining SeaWiFS, despite the inter-sensor correction of the product (Volpe et
   al., 2019), so the trends above start in 2003.
@@ -182,13 +184,14 @@ four periods (left) and monthly around BBMO (right).*
   does a quarter of the NW Mediterranean summer: clear summer waters are overestimated and their
   trends damped.
 - *Composition at the coast.* Against the HPLC samples of the stations (Task 1), the satellite
-  chlorophyll a follows well (r = 0.78, R² = 0.33) but zeaxanthin does not (r = −0.04), the
+  chlorophyll a follows well (r = 0.77, R² = 0.39) but zeaxanthin does not (r = −0.06), the
   haptophyte and pelagophyte pigments only weakly and at half their HPLC values or less (r =
-  0.37–0.45), and the highest values are missed: the composition signal of 2.1 is weaker at the
-  coast than the biomass signal. There are no HPLC samples around the Balearic Islands to check
-  them there.
-- *Few clear coastal pixels.* There are satellite data on 13% of the pixel-days around SOLA and 17%
-  around BBMO, against 26% at VIDA and 49% at MOLA.
+  0.36–0.43), and the highest values are missed: the composition signal of 2.1 is weaker at the
+  coast than the biomass signal. The concentrations at the coast are too low and vary less than in
+  situ, which damps trends and seasonal amplitudes without changing their sign or timing. There are no
+  HPLC samples around the Balearic Islands to check them there.
+- *Few clear coastal pixels.* There are satellite data on 7% of the pixel-days around SOLA (a
+  monthly value in 296 of 349 months) and 12% around BBMO, against 30% at VIDA and 49% at MOLA.
 
 <p align="center">
   <img src="report/nw_mediterranean_zeaxa_years.png" width="80%"
