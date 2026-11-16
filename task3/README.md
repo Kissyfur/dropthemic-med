@@ -70,10 +70,6 @@ The other groups are below 0.4% on average, and Prochlorococcus below 0.1%.
   2023, and below 4% in every March and April.
 - Other groups have single peaks: MOCH in winter (January 2021, December 2021), haptophytes in
   January 2022, dinoflagellates in July 2021 and Dictyochophyceae in May 2023 (5.1%).
-- The satellite predictions of [Task 4](../task4/README.md) put the maximum of Synechococcus at
-  VIDA in May, when its observed share (2–14%) is below that of March, July and autumn: as
-  suspected there, the models of Task 2, made in the NW Mediterranean, do not follow Synechococcus
-  in the Gulf of Trieste.
 
 <p align="center">
   <img src="report/vida_composition.png" width="80%" alt="Plankton groups of each sample at VIDA, 2021-2023">
@@ -88,3 +84,53 @@ The other groups are below 0.4% on average, and Prochlorococcus below 0.1%.
 
 *Seasonal cycle of Synechococcus, diatoms, dinoflagellates and haptophytes: each sample, coloured by
 year, and the mean of each month.*
+
+## 3. Validation of the chain of Tasks 1 and 2
+
+```bash
+python task3/scripts/validate_chain.py
+```
+
+It needs the outputs of Tasks 1 and 2. For each VIDA sample, the satellite pigments of Task 1
+around VIDA in its month are corrected as in [Task 2](../task2/README.md) and go to the PETRIMED
+metabarcoding models, whose units are those of the VIDA data (% of the eukaryotes or of the
+prokaryotes), so that predictions and observations can be compared directly. The models exist for
+the pico (0.2–3 µm) and nano (3–20 µm) fractions, both different from the > 0.8 µm of VIDA, so both
+are compared. All 23 samples have satellite pigments in their month; with 23 samples, a correlation
+is significant (p < 0.05) above 0.41.
+
+| Group | Observed (mean) | r, pico models | r, nano models | Predicted (mean, pico / nano) |
+|---|---|---|---|---|
+| Non-photosynthetic eukaryotes | 88% | 0.41 | 0.33 | 54% / 64% |
+| Non-photosynthetic prokaryotes | 83% | −0.11 | 0.30 | 97% / 92% |
+| Synechococcus | 15% | −0.17 | 0.48 | 7% / 8% |
+| Mediophyceae | 4.5% | 0.36 | 0.13 | 11% / 10% |
+| MOCH | 1.5% | 0.76 | 0.56 | 0.4% / 1.4% |
+| Dinophyceae | 0.7% | −0.05 | −0.23 | 5% / 18% |
+| Haptophyta | 0.6% | 0.24 | −0.09 | 1.3% / 0.7% |
+| Pelagophyceae | 0.3% | 0.44 | 0.48 | 1.8% / 0.4% |
+
+The other groups with models, all at 0.6% of their domain or less, are not followed either
+(|r| ≤ 0.39); green algae, absent at VIDA, cannot be compared.
+
+- The chain does not hold at VIDA for most groups. Only MOCH (r = 0.76 and 0.56) and the minor
+  Pelagophyceae (0.44 and 0.48) follow the observations with both kinds of models, MOCH mostly
+  through its two winter peaks, which the models predict much smaller. Synechococcus reaches 0.48
+  with the nano models but −0.17 with the pico ones. With 34 comparisons, one or two values above
+  0.41 are expected by chance.
+- The levels are off too: dinoflagellates are predicted 8 to 27 times too high, Synechococcus at
+  about half its share, and the photosynthetic eukaryotes too high as a whole (36–46% of the
+  eukaryotes, against 12%).
+- Without the correction of Task 2 the results are similar or worse (MOCH 0.70 and 0.22,
+  Synechococcus −0.27 and 0.46).
+- The data cannot tell whether the error comes from the pigments of Task 1 or from the models of
+  Task 2, but the result agrees with the low transferability of the models between ecosystems found
+  by Ramond et al. (2026), and with the proposal's choice (Risk 3) to analyse the plankton groups in
+  the NW Mediterranean.
+
+<p align="center">
+  <img src="report/vida_chain.png" width="80%" alt="Observed and predicted Synechococcus, MOCH, Mediophyceae and Dinophyceae at VIDA">
+</p>
+
+*Synechococcus, MOCH, Mediophyceae and Dinophyceae at VIDA: observed, and predicted from the
+corrected satellite pigments of each month by the pico and nano metabarcoding models of PETRIMED.*
