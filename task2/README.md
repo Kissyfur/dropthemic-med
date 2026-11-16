@@ -29,9 +29,10 @@ python task2/scripts/psts.py
 ```
 
 - `task2/PETRIMED` is a local copy: changes to it stay local.
-- `export_models.R` exports to `task2/data/models` the pico psbO models that PETRIMED averages,
-  those with a validation correlation of at least 0.6, as xgboost JSON for Python. It needs R with
-  the xgboost package (`install.packages("xgboost")`): the models were saved with xgboost 2 or
+- `export_models.R` exports to `task2/data/models` the models that PETRIMED averages, those with a
+  validation correlation of at least 0.6, as xgboost JSON for Python: the pico psbO models, used
+  here, and the pico and nano metabarcoding models, used with the VIDA data of Task 3. It needs R
+  with the xgboost package (`install.packages("xgboost")`): the models were saved with xgboost 2 or
   later.
 - `psts.py` predicts as PETRIMED does (pigments relative to their total, mean of the models), with
   the same results as in R, and tests the models on the HPLC pigments of BBMO (100 samples,
@@ -68,33 +69,43 @@ Correlation between predicted and observed abundance, for the psbO PSTs best pre
 python task2/scripts/predict_psts.py
 ```
 
-It needs the pigments of Task 1 (`task1/data/pigments/`). Their composition lies outside what the
-models learned: zeaxanthin is 10% of the satellite pigments around BBMO, against 1–2% in the HPLC
-samples. The script first maps each pigment share, by quantiles, onto its HPLC distribution at SOLA
-and MOLA (harmonization). It then checks the models at BBMO, which the harmonization does not use,
-from the satellite pigments of the month of each sample:
+It needs the pigments of Task 1 (`task1/data/pigments/`). The models take the share of each of the
+12 pigments in their total, so a bias that multiplied all the pigments by the same factor would not
+matter. But Task 1 is biased differently for each pigment (Task 1, step 4): fucoxanthin comes out
+too low and zeaxanthin too high, so the satellite composition is off. Zeaxanthin, for example, is
+9% of the satellite pigments around the NW Mediterranean stations, against under 2% in the HPLC
+samples. Dividing by chlorophyll a instead of the total would not help: once the shares sum to 1
+again, it gives the same composition.
 
-| PST (pico, psbO) | From HPLC pigments | From satellite pigments | Harmonized | Harmonized, seasonal cycle |
+The script therefore corrects the shares first: each one is multiplied by a fixed factor, the
+median HPLC share of that pigment at SOLA and MOLA divided by its median satellite share at the
+stations, and the shares are made to sum 1 again. The factors (`pigment_factors.csv`) mirror the
+biases of Task 1: fucoxanthin × 4.3, the haptophyte and pelagophyte pigments × 1.7–1.8, zeaxanthin
+× 0.19. The script then checks the models at BBMO, which the correction does not use, from the
+satellite pigments of the month of each sample:
+
+| PST (pico, psbO) | From HPLC pigments | From satellite pigments | Corrected | Corrected, seasonal cycle |
 |---|---|---|---|---|
-| Micromonas | 0.55 | −0.24 | −0.09 | 0.10 |
-| Synechococcus | 0.54 | 0.02 | **0.62** | **0.89** |
-| Pelagophyceae | 0.52 | −0.22 | −0.14 | −0.27 |
-| Bathycoccus | 0.51 | 0.18 | 0.26 | **0.54** |
+| Micromonas | 0.55 | −0.20 | 0.07 | 0.10 |
+| Synechococcus | 0.54 | 0.00 | **0.56** | **0.87** |
+| Pelagophyceae | 0.52 | −0.14 | −0.12 | −0.29 |
+| Bathycoccus | 0.51 | 0.17 | 0.21 | 0.34 |
 
-- From the satellite pigments as they are, no PST holds and the seasonal cycles come out inverted.
-  Harmonized, Synechococcus holds, and so does the seasonal cycle of Bathycoccus; no other PST
-  does. The harmonization was chosen after seeing the failure: it is a hypothesis that this check
-  supports, not a validated method.
+- From the satellite pigments as they are, no PST holds. Corrected, Synechococcus holds; the
+  seasonal cycle of Bathycoccus does only weakly, and no other PST does. Mapping the whole
+  distribution of each share onto the HPLC one (quantile mapping) instead of only its median gives
+  about the same (Synechococcus 0.60, seasonal cycle 0.89). The correction was chosen after seeing
+  the failure: it is a hypothesis that this check supports, not a validated method.
 - The satellite zeaxanthin barely varies (Task 1, step 4), so its share is almost the inverse of
   chlorophyll a: the Synechococcus indicator is mostly a low-chlorophyll signal, which the observed
   Synechococcus also follows at BBMO.
-- Both the models and the harmonization come from the Catalan and French coast. They are applied
+- Both the models and the correction come from the Catalan and French coast. They are applied
   there and around the Balearic Islands, in the same western basin but without in situ data to check
-  them (the proposal's Risk 3 keeps the plankton analysis to this part of the Mediterranean); the
-  VIDA data of Task 3 will tell whether they hold in the Gulf of Trieste.
+  them (the proposal's Risk 3 keeps the plankton analysis to this part of the Mediterranean). At
+  VIDA, in the Gulf of Trieste, they do not hold ([Task 3](../task3/README.md)).
 
 The script then predicts these two PSTs and writes to `task2/data/psts/`, in about 15 minutes:
-- `satellite_check.csv`, `pigment_quantiles.csv` and `task2/figures/satellite_check.png`: the check
+- `satellite_check.csv`, `pigment_factors.csv` and `task2/figures/satellite_check.png`: the check
   (`--check-only` stops there);
 - `<region>_monthly.nc`: their abundance (psbO RPKM) on the grid of the monthly pigments, with their
   `valid_days`;
@@ -107,4 +118,4 @@ The script then predicts these two PSTs and writes to `task2/data/psts/`, in abo
 </p>
 
 *Synechococcus and Bathycoccus at BBMO: observed, and predicted from the HPLC pigments and from the
-harmonized satellite pigments of each month.*
+corrected satellite pigments of each month.*

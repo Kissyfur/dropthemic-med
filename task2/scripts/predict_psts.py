@@ -2,16 +2,17 @@
 
     python task2/scripts/predict_psts.py [--check-only]
 
-1. Harmonization. The composition of the satellite pigments of Task 1 is outside the one the models
-   learned (e.g. a zeaxanthin share around 0.10, against about 0.01 at SOLA). Each pigment share is
-   mapped by quantiles from its distribution in the satellite record at the NW Mediterranean
-   stations (median of each month around each station) onto its distribution in the HPLC samples
-   of SOLA and MOLA. The quantiles go to task2/data/psts/pigment_quantiles.csv.
-2. Check at BBMO, which the harmonization does not use: Pearson correlation between the abundance
+The models take the share of each of 12 pigments in their total. Task 1 is biased differently for
+each pigment (zeaxanthin too high, fucoxanthin too low...), so the satellite shares are off.
+1. Correction. Each satellite share is multiplied by one factor per pigment, the median HPLC share
+   at SOLA and MOLA divided by the median satellite share at the NW Mediterranean stations (median
+   of each month around each station), and the shares are made to sum 1 again. The factors go to
+   task2/data/psts/pigment_factors.csv.
+2. Check at BBMO, which the correction does not use: Pearson correlation between the abundance
    observed in each BBMO sample (2004-2014) and the one predicted from the satellite pigments of
-   its month, as they are and harmonized, also for the mean seasonal cycle, for the pico psbo PSTs.
+   its month, as they are and corrected, also for the mean seasonal cycle, for the pico psbo PSTs.
    Writes task2/data/psts/satellite_check.csv and task2/figures/satellite_check.png.
-3. Prediction, from the harmonized pigments, of the PSTs in PSTS, those with some skill in the check:
+3. Prediction, from the corrected pigments, of the PSTs in PSTS, those with some skill in the check:
    - <region>_monthly.nc, from task1/data/pigments/<region>_monthly.nc, plus its `valid_days`;
    - stations_monthly.nc, from the monthly median of the pigments around each station.
 --check-only stops after step 2.
@@ -21,14 +22,13 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import psts
 import xarray as xr
 
 PIGMENT_DIR = Path("task1/data/pigments")
 OUTPUT_DIR = Path("task2/data/psts")
-QUANTILES = OUTPUT_DIR / "pigment_quantiles.csv"
+FACTORS = OUTPUT_DIR / "pigment_factors.csv"
 CHECK = OUTPUT_DIR / "satellite_check.csv"
 FIGURE = Path("task2/figures/satellite_check.png")
 MIN_DAYS = 3
@@ -55,34 +55,31 @@ def satellite_monthly() -> pd.DataFrame:
     return monthly.reset_coords(drop=True).to_dataframe().reset_index().set_index(["station", "time"])
 
 
-def save_quantiles(satellite: pd.DataFrame) -> None:
-    """Quantiles of the satellite shares at the NW Mediterranean stations and of the HPLC shares at
-    SOLA and MOLA (not BBMO, kept for the check)."""
+def save_factors(satellite: pd.DataFrame) -> None:
+    """Median share of each pigment in the satellite record at the NW Mediterranean stations and in
+    the HPLC samples of SOLA and MOLA (not BBMO, kept for the check), and their ratio."""
     sat = psts.relative(from_task1(satellite.loc[["BBMO", "SOLA", "MOLA"]]).dropna())
     insitu = psts.read_insitu().query("ST != 'BBMO'")
     hplc = psts.relative(psts.estimate_prasinoxanthin(insitu[psts.PIGMENTS]))
-    levels = np.linspace(0, 1, 101)
-    table = {"quantile": levels}
-    for p in psts.PIGMENTS:
-        table[f"{p}_satellite"], table[f"{p}_hplc"] = np.quantile(sat[p], levels), np.quantile(hplc[p], levels)
-    pd.DataFrame(table).to_csv(QUANTILES, index=False)
+    table = pd.DataFrame({"satellite": sat.median(), "hplc": hplc.median()}).rename_axis("pigment")
+    table["factor"] = table["hplc"] / table["satellite"]
+    table.to_csv(FACTORS, float_format="%.4f")
+    print(table.round(3).to_string())
 
 
-def harmonize(shares: pd.DataFrame) -> pd.DataFrame:
-    """Satellite pigment shares mapped by quantiles onto the HPLC ones, then made relative again."""
-    q = pd.read_csv(QUANTILES)
-    mapped = pd.DataFrame({p: np.interp(shares[p], q[f"{p}_satellite"], q[f"{p}_hplc"]) for p in psts.PIGMENTS},
-                          index=shares.index)
-    return mapped.div(mapped.sum(axis=1), axis=0)
+def correct(shares: pd.DataFrame) -> pd.DataFrame:
+    """Satellite pigment shares times their factor, then made to sum 1 again."""
+    corrected = shares * pd.read_csv(FACTORS, index_col="pigment")["factor"]
+    return corrected.div(corrected.sum(axis=1), axis=0)
 
 
 def check(satellite: pd.DataFrame) -> pd.DataFrame:
-    summary = pd.read_csv(psts.MODELS_DIR / "summary.csv")
+    summary = pd.read_csv(psts.MODELS_DIR / "summary.csv").query("set == 'psbo_pico'")
     bbmo = psts.read_insitu().query("ST == 'BBMO'")
     months = bbmo["Date"].dt.to_period("M").dt.to_timestamp()
     pigments = from_task1(satellite.reindex(pd.MultiIndex.from_arrays([bbmo["ST"], months]))
                           .set_axis(bbmo.index)).dropna()
-    inputs = {"satellite": psts.relative(pigments), "harmonized": harmonize(psts.relative(pigments))}
+    inputs = {"satellite": psts.relative(pigments), "corrected": correct(psts.relative(pigments))}
     month = bbmo["Date"].dt.month
     rows, series = [], {}
     for pst in summary["pst"]:
@@ -100,7 +97,7 @@ def check(satellite: pd.DataFrame) -> pd.DataFrame:
             hplc = psts.relative(bbmo[psts.PIGMENTS])
             series[pst] = {"observed": observed,
                            "HPLC pigments": pd.Series(psts.predict(models, hplc), index=hplc.index),
-                           "harmonized satellite pigments": predicted["harmonized"]}
+                           "corrected satellite pigments": predicted["corrected"]}
     table = pd.DataFrame(rows)
     table.to_csv(CHECK, index=False, float_format="%.3f")
     psts.plot_check(bbmo["Date"], series,
@@ -113,7 +110,7 @@ def check(satellite: pd.DataFrame) -> pd.DataFrame:
 def predict(pigments: pd.DataFrame, models: dict) -> pd.DataFrame:
     """Abundance of each PST for each row of Task 1 pigments, NaN where a pigment is missing."""
     ok = pigments[list(TASK1.values())].notnull().all(axis=1)
-    x = harmonize(psts.relative(from_task1(pigments[ok])))
+    x = correct(psts.relative(from_task1(pigments[ok])))
     out = pd.DataFrame(index=pigments.index, columns=list(models), dtype="float32")
     for pst, pst_models in models.items():
         out.loc[ok, pst] = psts.predict(pst_models, x).astype("float32")
@@ -124,9 +121,9 @@ def describe(data: xr.Dataset, table: pd.DataFrame) -> xr.Dataset:
     for pst in PSTS:
         r = table.set_index("pst").loc[pst]
         data[pst].attrs = {"long_name": f"{pst} (pico, psbO)", "units": "RPKM",
-                           "comment": f"r at BBMO from harmonized satellite pigments: {r.r_harmonized:.2f} "
-                                      f"monthly, {r.r_harmonized_seasonal:.2f} seasonal cycle"}
-    data.attrs["model"] = "PETRIMED XGBoost models (Task 2) on harmonized satellite pigments"
+                           "comment": f"r at BBMO from corrected satellite pigments: {r.r_corrected:.2f} "
+                                      f"monthly, {r.r_corrected_seasonal:.2f} seasonal cycle"}
+    data.attrs["model"] = "PETRIMED XGBoost models (Task 2) on corrected satellite pigments"
     return data
 
 
@@ -143,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     satellite = satellite_monthly()
-    save_quantiles(satellite)
+    save_factors(satellite)
     table = check(satellite)
     if args.check_only:
         return 0

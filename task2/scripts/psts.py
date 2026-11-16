@@ -5,7 +5,7 @@
 PETRIMED (task2/PETRIMED) trained XGBoost models at SOLA, in 2015-2016, that predict the abundance
 of plankton sequence types (PSTs) from the relative composition of 12 HPLC pigments. Here the pico
 (0.2-3 um) psbO models are used, those with a validation correlation of at least 0.6, which
-PETRIMED averages, exported by export_models.R to task2/data/models.
+PETRIMED averages, exported by export_models.R to task2/data/models/psbo_pico.
 
 They are tested on the HPLC pigments of BBMO (100 samples, 2004-2014) and MOLA (7, 2020-2021),
 where they were not trained, with the Pearson correlation between predicted and observed
@@ -55,9 +55,9 @@ def relative(pigments: pd.DataFrame) -> pd.DataFrame:
     return x.div(x.sum(axis=1), axis=0)
 
 
-def load_models(pst: str) -> list[xgb.Booster]:
+def load_models(pst: str, model_set: str = "psbo_pico") -> list[xgb.Booster]:
     models = []
-    for line in (MODELS_DIR / f"{pst}.jsonl").read_text().splitlines():
+    for line in (MODELS_DIR / model_set / f"{pst}.jsonl").read_text().splitlines():
         # xgboost 3 writes base_score as a list, which xgboost 2.1 does not read
         line = re.sub(r'"base_score":"\[([^\]]+)\]"', r'"base_score":"\1"', line)
         model = xgb.Booster()
@@ -83,7 +83,7 @@ def pearson(observed, predicted) -> tuple[float, int]:
     return float(np.corrcoef(observed[ok], predicted[ok])[0, 1]), int(ok.sum())
 
 
-def plot_check(dates: pd.Series, series: dict, title: str, path: Path) -> None:
+def plot_check(dates: pd.Series, series: dict, title: str, path: Path, ylabel: str = "RPKM") -> None:
     """One panel per PST: observed abundance and predictions. `series[pst]` is a dict
     {"observed": Series, "<source of the pigments>": predicted Series, ...} indexed like `dates`."""
     import matplotlib
@@ -102,7 +102,7 @@ def plot_check(dates: pd.Series, series: dict, title: str, path: Path) -> None:
         r = ", ".join(f"{pearson(observed[v.index], v)[0]:.2f} from {source}"
                       for source, v in values.items() if source != "observed")
         ax.set_title(f"{pst}: r = {r}", fontsize=9, loc="left")
-        ax.set_ylabel("RPKM")
+        ax.set_ylabel(ylabel)
         ax.grid(axis="y", color="#e5e5e2", lw=0.6)
         ax.spines[["top", "right"]].set_visible(False)
     fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", ncol=3, frameon=False,
@@ -114,7 +114,7 @@ def plot_check(dates: pd.Series, series: dict, title: str, path: Path) -> None:
 
 
 def main() -> int:
-    summary = pd.read_csv(MODELS_DIR / "summary.csv")
+    summary = pd.read_csv(MODELS_DIR / "summary.csv").query("set == 'psbo_pico'")
     pico = read_insitu()
     # Pigments made relative within each station, as PETRIMED
     inputs = {
