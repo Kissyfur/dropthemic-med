@@ -115,10 +115,14 @@ so it shows whether the satellite pigments rise and fall with the HPLC ones. The
 - A bias by the same factor at all times would not change trends in % per decade or seasonal
   timing, the measures of Task 4. But the satellite pigments also vary less than the HPLC ones, so
   trends and seasonal amplitudes are damped, though their sign and timing hold, and the composition
-  is distorted, which Task 2 corrects before using the pigments. A calibration
-  against HPLC would correct chlorophylls a and b at other stations (a factor fitted at BBMO raises
-  the R² of chlorophyll a at SOLA from 0.47 to 0.60), but not the other pigments, whose bias
-  depends on the site; it is not applied, as the project applies the published models as they are.
+  is distorted, which Task 2 corrects before using the pigments.
+- A calibration against HPLC, one factor per pigment, would help where it is fitted: fitted on the
+  other years of the same stations, it raises the median R² from 0.12 to 0.25 (fucoxanthin 0.00 →
+  0.56, chlorophyll a 0.39 → 0.56). But it does not carry over to another site, as the bias depends
+  on the site: fitted at BBMO, it leaves SOLA poor (median R² −1.39 → −0.65), and fitted at SOLA, it
+  makes BBMO worse (−0.33 → −0.49). Mapping the whole distribution (quantile mapping) does no better.
+  It is not applied: most of the record has no HPLC to fit it, a constant factor does not change the
+  trends and seasonal timing of Task 4, and the project applies the published models as they are.
 - Of the five CNNs, the one of the record, fine-tuned with satellite matchups, has the best median
   R² (0.12, against −0.22 to −0.06) and is the best for chlorophylls a and b and fucoxanthin. The
   others do better for 19'-hexanoyloxyfucoxanthin (r = 0.58–0.60 for three of them, against 0.43)
