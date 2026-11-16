@@ -18,7 +18,7 @@ data go to `task1/data/` and the figures to `task1/figures/`, neither kept in gi
 |---|---|---|
 | `nw_mediterranean` | 40.50–43.50 N, 1.50–5.50 E | monthly maps (step 1) |
 | `balearic_islands` | 38.55–40.20 N, 1.10–4.50 E | monthly maps (step 1) |
-| BBMO, SOLA, MOLA, VIDA | 11 × 9 pixels around each station | daily cubes (step 2) |
+| BBMO, SOLA, MOLA, VIDA | 5 × 5 pixels around each station | daily cubes (step 2) |
 
 BBMO is the Blanes Bay Microbial Observatory, SOLA and MOLA the coastal and offshore stations of
 Banyuls-sur-Mer, and VIDA the Vida buoy off Piran, in the Gulf of Trieste.
@@ -38,7 +38,7 @@ and later runs only fetch the newest months.
 
 ## 2. Daily station cubes
 
-A cube around each station for every day of the record (11 × 9 pixels of about 1 km, ±7 days),
+A cube around each station for every day of the record (5 × 5 pixels of about 1 km, ±7 days),
 built with [copernicus-matchup](https://github.com/Kissyfur/copernicus-matchup). Pixels without a
 satellite retrieval stay empty; each band is floored at the 5% quantile of its positive values in
 the cube, then log-transformed:
@@ -72,7 +72,7 @@ also has the `predict-pigments` command of Task 1.
 ## 4. Check against HPLC
 
 The Task 2 samples (PETRIMED: SOLA, BBMO and MOLA, 196 in 2004–2021) have HPLC pigments. Each is
-matched with its station cube of step 2: the 11 × 9 pixels around the station, from 7 days before
+matched with its station cube of step 2: the 5 × 5 pixels around the station, from 7 days before
 to 7 days after the sampling day. The convolutional Task 1 models of the multi-sensor bands predict
 the pigments of every pixel and day with a satellite retrieval, and their median is compared with
 the HPLC pigments, for the 10 pigments of the proposal:
@@ -90,35 +90,46 @@ so it shows whether the satellite pigments rise and fall with the HPLC ones. The
 
 | Pigment | R² | r | MAPE | Bias (MPE) |
 |---|---|---|---|---|
-| Chlorophyll a | 0.33 | 0.78 | 37% | −25% |
-| Chlorophyll b | 0.24 | 0.62 | 73% | +4% |
-| β-carotene | 0.17 | 0.52 | 47% | +4% |
-| Diadinoxanthin | 0.14 | 0.66 | 56% | −23% |
-| Peridinin | 0.14 | 0.46 | 122% | +49% |
-| Alloxanthin | −0.05 | 0.71 | 75% | −29% |
-| Fucoxanthin | −0.16 | 0.76 | 75% | −51% |
-| Zeaxanthin | −0.72 | −0.04 | 402% | +390% |
-| 19'-butanoyloxyfucoxanthin | −1.67 | 0.37 | 66% | −59% |
-| 19'-hexanoyloxyfucoxanthin | −1.75 | 0.45 | 66% | −61% |
+| Chlorophyll a | 0.39 | 0.77 | 35% | −19% |
+| Chlorophyll b | 0.26 | 0.60 | 75% | +11% |
+| Diadinoxanthin | 0.24 | 0.68 | 55% | −18% |
+| β-carotene | 0.20 | 0.55 | 48% | +10% |
+| Peridinin | 0.19 | 0.50 | 122% | +52% |
+| Alloxanthin | 0.05 | 0.72 | 73% | −27% |
+| Fucoxanthin | 0.00 | 0.77 | 78% | −41% |
+| Zeaxanthin | −0.69 | −0.06 | 394% | +379% |
+| 19'-butanoyloxyfucoxanthin | −1.63 | 0.36 | 66% | −58% |
+| 19'-hexanoyloxyfucoxanthin | −1.73 | 0.43 | 66% | −60% |
 
-- R² is at most 0.33, against 0.70–0.93 in situ and about 0.2 less on satellite data in the paper,
-  mostly because of biases: the satellite pigments rise and fall with the HPLC ones (r = 0.62–0.78
+- R² is at most 0.39, against 0.70–0.93 in situ and about 0.2 less on satellite data in the paper,
+  mostly because of biases: the satellite pigments rise and fall with the HPLC ones (r = 0.60–0.77
   for chlorophylls a and b, fucoxanthin, alloxanthin and diadinoxanthin), but fucoxanthin and the
   haptophyte and pelagophyte pigments come out at half the HPLC values or less, and zeaxanthin
   about five times higher. Zeaxanthin barely varies: it stays near 0.04 mg m⁻³.
-- Over time, the satellite pigments follow the timing of the BBMO samples and the seasonal cycle of
-  the weekly SOLA samples of 2015–2016, but not the size of their peaks: in the SOLA blooms,
-  fucoxanthin, the haptophyte and pelagophyte pigments, alloxanthin and peridinin stay several
-  times below the HPLC values.
+- The underestimation is a coastal one and grows with concentration, as the satellite pigments vary
+  less than the HPLC ones. Over time they follow the timing of the BBMO samples and the seasonal
+  cycle of the weekly SOLA samples of 2015–2016, but not the size of their peaks. Fucoxanthin and
+  the haptophyte and pelagophyte pigments come out at 13–21% of the HPLC values at SOLA, where the
+  2015–2016 blooms give the highest values, and at 40–51% at BBMO. Offshore at MOLA (7 samples)
+  most pigments are within about a third of HPLC.
+- A bias by the same factor at all times would not change trends in % per decade or seasonal
+  timing, the measures of Task 4. But the satellite pigments also vary less than the HPLC ones, so
+  trends and seasonal amplitudes are damped, though their sign and timing hold, and the composition
+  is distorted, which Task 2 corrects before using the pigments. A calibration
+  against HPLC would correct chlorophylls a and b at other stations (a factor fitted at BBMO raises
+  the R² of chlorophyll a at SOLA from 0.47 to 0.60), but not the other pigments, whose bias
+  depends on the site; it is not applied, as the project applies the published models as they are.
 - Of the five CNNs, the one of the record, fine-tuned with satellite matchups, has the best median
-  R² (0.05, against −0.28 to −0.09) and is the best for chlorophylls a and b and fucoxanthin. The
-  others do better for 19'-hexanoyloxyfucoxanthin (r = 0.64–0.65 for three of them, against 0.45)
+  R² (0.12, against −0.22 to −0.06) and is the best for chlorophylls a and b and fucoxanthin. The
+  others do better for 19'-hexanoyloxyfucoxanthin (r = 0.58–0.60 for three of them, against 0.43)
   and peridinin, and none for zeaxanthin.
-- The window, sampling day ±7 days, was the best of those tried (the tests are not kept). The
-  sampling day alone matches only 92 samples, and agrees less with HPLC: daily retrievals are noisy.
-  Larger areas, up to about 30 km, add offshore water, with less chlorophyll than the stations. The
-  3 × 3 pixels and ±1 day of the global 4 km product with which the model was fine-tuned
-  overestimate chlorophyll a by about 60% next to the coast.
+- The window, 5 × 5 pixels (about 5 km) and the sampling day ±7 days, was the best of those tried
+  (the tests are not kept). With 11 × 9 pixels the median R² is 0.05 and the bias −24%, against
+  0.12 and −18%: the larger area adds offshore water, with less pigment than the coastal stations.
+  3 × 3 pixels reduce the bias a little more but lose 14 samples. The sampling day alone matches
+  only 65 samples and agrees less with HPLC, as daily retrievals are noisy, and the global 4 km
+  product with which the model was fine-tuned overestimates chlorophyll a by about 60% next to the
+  coast.
 
 <p align="center">
   <img src="report/hplc_check.png" width="80%" alt="Satellite against HPLC pigments at SOLA, BBMO and MOLA">

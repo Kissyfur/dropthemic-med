@@ -1,4 +1,4 @@
-# Daily radiometry cubes at the sampling stations, for every day of the record: the 11 x 9
+# Daily radiometry cubes at the sampling stations, for every day of the record: the 5 x 5
 # pixels (about 1 km) around each station, from 7 days before to 7 days after the day. Pixels
 # without a satellite retrieval stay empty. The rows have no target: the cubes are for station
 # time series and for predicting with the Task 1 model.
@@ -43,8 +43,10 @@ products:
       fillna: null               # gaps stay empty
 
 matchup:
-  lat_window: 0.06
-  lon_window: 0.06
+  # 5 x 5 pixels of 0.0101 x 0.0128 degrees. Larger windows add offshore water to the coastal
+  # stations and underestimate their pigments (Task 1, step 4).
+  lat_window: 0.025
+  lon_window: 0.03
   time_window_days: 7
   lat_threshold: 0.1
   lon_threshold: 0.1

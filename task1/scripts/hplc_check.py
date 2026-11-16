@@ -3,7 +3,7 @@
     python task1/scripts/hplc_check.py
 
 The Task 2 samples with HPLC pigments (PETRIMED: SOLA, BBMO and MOLA; one per station and date) are
-matched with their station cube of station_matchups.py: the 11 x 9 pixels around the station, from
+matched with their station cube of station_matchups.py: the 5 x 5 pixels around the station, from
 7 days before to 7 days after the sampling day. Each convolutional Task 1 model of the 5
 multi-sensor bands predicts the pigments of every pixel and day with a satellite retrieval, and
 their median is compared with the HPLC pigments, for the 10 pigments of the proposal: R^2 and

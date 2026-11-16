@@ -9,7 +9,7 @@ quantile, so no transform is applied here. Writes to task1/data/pigments:
   pigments on the same (time, latitude, longitude) grid, plus its `valid_days`. Means of one or
   two days can be unrealistic: filter on `valid_days`.
 - stations_daily.nc from the station cubes, task1/data/station_matchups/datasets/optics.nc: the
-  pigments of the 11 x 9 pixels around each station on each day, as (station, time, lat_pixel,
+  pigments of the 5 x 5 pixels around each station on each day, as (station, time, lat_pixel,
   lon_pixel), from the cube's centre day. Pixels without a retrieval that day stay empty.
 """
 from __future__ import annotations
