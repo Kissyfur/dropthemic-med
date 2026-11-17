@@ -138,7 +138,7 @@ python task3/scripts/validate_chain.py
 - From 2003 to 2025 the NW Mediterranean loses chlorophyll a (−8% per decade) and fucoxanthin
   (−18%) while zeaxanthin rises (+5%), as satellite functional types do (Martínez-Fornos et al.,
   2026). The Balearic Islands change the same way, more weakly (−5%, −12%, +2%), the coastal
-  stations BBMO and SOLA most strongly (chlorophyll a −17 to −19%), and VIDA has no trend.
+  stations BBMO and SOLA most strongly (chlorophyll a −19%), and VIDA has no trend.
 - Around the Balearic Islands the shelf has 20% less chlorophyll a than the deep basin in winter,
   and the same in summer: it lacks part of the winter increase.
 - Limits: a step in the record in 2002–2003 (change of sensors), a floor of the model near
